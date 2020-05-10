@@ -1,3 +1,4 @@
 *.o
 *.compiled
+*.dll
 test.*
