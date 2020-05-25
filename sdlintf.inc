@@ -627,6 +627,9 @@ type
   function SDL_CreateWindow(const title: PAnsiChar; x: SInt32; y: SInt32; w: SInt32; h: SInt32; flags: UInt32): PSDL_Window cdecl; external SDL_LibName;
   procedure SDL_DestroyWindow(window: PSDL_Window) cdecl; external SDL_LibName;
   procedure SDL_SetWindowFullscreen(window: PSDL_Window; flags: UInt32) cdecl; external SDL_LibName;
+  procedure SDL_SetWindowPosition(window: PSDL_Window; x, y: SInt32) cdecl; external SDL_LibName;
+  procedure SDL_SetWindowSize(window: PSDL_Window; w, h: SInt32) cdecl; external SDL_LibName;
+  procedure SDL_SetWindowTitle(window: PSDL_Window; title: PChar) cdecl; external SDL_LibName;
 
   { Video }
   function SDL_CreateTextureFromSurface(renderer: PSDL_Renderer; surface: PSDL_Surface): PSDL_Texture cdecl; external SDL_LibName;
@@ -667,5 +670,9 @@ type
   { Font }
   function TTF_Init(): Integer cdecl; external TTF_LibName;
   function TTF_OpenFont(_file: PAnsiChar; ptsize: Integer): PTTF_Font cdecl; external TTF_LibName;
+  function TTF_RenderText_Shaded(font: PTTF_Font; text: PAnsiChar; fg, bg: TSDL_Color): PSDL_Surface cdecl; external TTF_LibName;
+  function TTF_RenderText_Solid(font: PTTF_Font; text: PAnsiChar; fg: TSDL_Color): PSDL_Surface cdecl; external TTF_LibName;
   procedure TTF_SetFontHinting(font: PTTF_Font; hinting: Integer) cdecl; external TTF_LibName;
+  procedure TTF_SetFontOutline(font: PTTF_Font; outline: Integer) cdecl; external TTF_LibName;
+  function TTF_SizeText(font: PTTF_Font; text: PAnsiChar; w, h: PInt): Integer cdecl; external TTF_LibName;
 

@@ -21,15 +21,16 @@ const
 
 type
   TEventTimer = class;
+  TLayer      = class;
   TSprite     = class;
   TScene      = class;
   TWaffleGame = class;
 
-  TIntProc  = procedure(arg: integer);
-  TGameProc = procedure(Game: TWaffleGame);
-  TProc     = procedure;
+  TIntProc   = procedure(arg: integer);
+  TGameProc  = procedure(Game: TWaffleGame);
+  TProc      = procedure;
+  TLayerList = specialize TFPGObjectList<TLayer>;
   TSpriteList = specialize TFPGObjectList<TSprite>;
-  //TSpriteList = array of TSprite;
 
   { TWaffleGame }
 
@@ -44,7 +45,7 @@ type
     procedure SetFullscreen(AValue: boolean);
   public
     OnKeyDown: TIntProc;
-    constructor Create(ATitle: PChar; AScreenWidth, AScreenHeight: integer);
+    constructor Create(ATitle: PChar; AX, AY, AScreenWidth, AScreenHeight: integer);
     procedure Cleanup;
     procedure Exit;
     procedure SetScene(Scene: TScene);
@@ -59,6 +60,7 @@ type
   private
     FFlipHorizontal, FFlipVertical: boolean;
     FOpacity:   UInt8;
+    FParentLayer: TLayer;
     FParentScene: TScene;
     FPosX, FPosY: Float;
     FShown:     boolean;
@@ -67,11 +69,9 @@ type
     FRotation:  double;
 
     CurrentFlip: integer;
-    GameRef:     TWaffleGame;
     ImageFileName: PChar;
-    Surface:     PSDL_Surface;
-    //DstRect:     TSDL_Rect;
-    Texture:     PSDL_Texture;
+    Surface: PSDL_Surface;
+    Texture: PSDL_Texture;
     function GetPosX: Float;
     function GetPosY: Float;
     procedure SetFlipHorizontal(AValue: boolean);
@@ -80,7 +80,7 @@ type
     procedure SetPosX(AValue: Float);
     procedure SetPosY(AValue: Float);
   public
-    constructor Create(AGame: TWaffleGame; APosX, APosY, AWidth, AHeight: Float);
+    constructor Create(APosX, APosY, AWidth, AHeight: Float);
       virtual;
     procedure Delete;
     procedure Draw; virtual;
@@ -90,6 +90,7 @@ type
     property FlipVertical: boolean read FFlipVertical write SetFlipVertical;
     property Opacity: UInt8 read FOpacity write SetOpacity;
     property Shown: boolean read FShown write FShown;
+    property ParentLayer: TLayer read FParentLayer write FParentLayer;
     property ParentScene: TScene read FParentScene write FParentScene;
     property PosX: Float read FPosX write SetPosX;
     property PosY: Float read FPosY write SetPosY;
@@ -112,11 +113,40 @@ type
     procedure SetFrameHeight(AValue: integer);
     procedure SetFrameWidth(AValue: integer);
   public
-    constructor Create(AGame: TWaffleGame; APosX, APosY, AWidth, AHeight: Float);
-      overload;
+    constructor Create(APosX, APosY, AWidth, AHeight: Float); overload;
     procedure Draw; override;
     property FrameWidth: integer read GetFrameWidth write SetFrameWidth;
     property FrameHeight: integer read GetFrameHeight write SetFrameHeight;
+  end;
+
+  { TText }
+
+  TText = class(TSprite)
+  private
+    FFont:      PTTF_Font;
+    FFontColor: TSDL_Color;
+    FFontSize:  integer;
+    FText:      PChar;
+  public
+    constructor Create(APosX, APosY: Float; AFontSize: integer); overload;
+    procedure LoadFontFromFile(FileName: PChar);
+    procedure SetColor(r, g, b, a: integer);
+    procedure SetText(AText: PChar);
+    procedure UpdateTexture;
+  end;
+
+  { TLayer }
+
+  TLayer = class
+  private
+    FSPriteList: TSpriteList;
+  public
+    constructor Create;
+    procedure AddSprite(Sprite: TSprite);
+    procedure Cleanup;
+    procedure Draw;
+    procedure OnUpdate(Game: TWaffleGame; dt: Float);
+    property SpriteList: TSpriteList read FSpriteList;
   end;
 
   { TScene }
@@ -125,14 +155,18 @@ type
     GameRef: TWaffleGame;
     OnInit:  TProc;
   private
+    FLayerList:  TLayerList;
     FSpriteList: TSpriteList;
+    BaseLayer:   TLayer;
     function GetScreenWidth: SInt32;
   public
     constructor Create;
+    procedure AddLayer(layer: TLayer);
     procedure AddSprite(sprite: TSprite);
     procedure Cleanup;
     procedure OnUpdate(Game: TWaffleGame; dt: Float); virtual; abstract;
     procedure OnKeyDown(Key: UInt32); virtual; abstract;
+    property LayerList: TLayerList read FLayerList;
     property ScreenWidth: SInt32 read GetScreenWidth;
     property SpriteList: TSpriteList read FSpriteList;
   end;
@@ -155,6 +189,7 @@ type
     procedure Stop;
   end;
 
+function CreateFontTextureFromFile(FileName: PChar; FontSize: integer): PSDL_Texture;
 function CreateTextureFromFile(FileName: PChar; Smooth: boolean = True): PSDL_Texture;
 function IsKeyDown(KeyCode: integer): boolean;
 function SpriteRectsIntersect(s1, s2: TSprite): boolean;
@@ -169,6 +204,29 @@ var
 
 implementation
 
+function CreateFontTextureFromFile(FileName: PChar; FontSize: integer): PSDL_Texture;
+var
+  f: PTTF_Font;
+  fs: PSDL_Surface;
+  ft: PSDL_Texture;
+  fr: TSDL_Rect;
+  c1: TSDL_Color;
+begin
+  c1.r := 255;
+  c1.g := 255;
+  c1.b := 255;
+  c1.a := 255;
+
+  f := TTF_OpenFont(FileName, FontSize);
+  TTF_SetFontHinting(f, TTF_HINTING_NORMAL);
+  fs := TTF_RenderText_Solid(f, 'Score: 0', c1);
+  ft := SDL_CreateTextureFromSurface(GameRenderer, fs);
+
+  fr.x := 10;
+  fr.y := 10;
+  TTF_SizeText(f, 'Score: 0', @fr.w, @fr.h);
+end;
+
 function CreateTextureFromFile(FileName: PChar; Smooth: boolean): PSDL_Texture;
 begin
   if Smooth then
@@ -179,7 +237,6 @@ end;
 function IsKeyDown(KeyCode: integer): boolean;
 begin
   Exit(GameKeyboardState[KeyCode] = 1);
-  //Exit(False);
 end;
 
 function SpriteRectsIntersect(s1, s2: TSprite): boolean;
@@ -199,6 +256,82 @@ begin
   if Assigned(param) then
     TProc(param);
   exit(interval);
+end;
+
+{ TLayer }
+
+constructor TLayer.Create;
+begin
+  FSPriteList := TSpriteList.Create();
+end;
+
+procedure TLayer.AddSprite(Sprite: TSprite);
+begin
+  SpriteList.Add(Sprite);
+  Sprite.ParentLayer := Self;
+end;
+
+procedure TLayer.Cleanup;
+var
+  s: TSprite;
+begin
+  for s in FSpriteList do
+    s.Draw;
+end;
+
+procedure TLayer.Draw;
+var
+  Spr: TSprite;
+begin
+  for Spr in SpriteList do
+    Spr.Draw;
+end;
+
+procedure TLayer.OnUpdate(Game: TWaffleGame; dt: Float);
+var
+  spr: TSprite;
+begin
+  for spr in SpriteList do
+    if not (TMethod(@spr.OnUpdate).Code = Pointer(@system.AbstractError)) then
+      spr.OnUpdate(Game, dt);
+end;
+
+{ TText }
+
+constructor TText.Create(APosX, APosY: Float; AFontSize: integer);
+begin
+  Create(APosX, APosY, 0, 0);
+  SetColor(255, 255, 255, 255);
+  FText     := '';
+  FFontSize := AFontSize;
+end;
+
+procedure TText.LoadFontFromFile(FileName: PChar);
+begin
+  FFont := TTF_OpenFont(FileName, FFontSize);
+  TTF_SetFontHinting(FFont, TTF_HINTING_NORMAL);
+end;
+
+procedure TText.SetColor(r, g, b, a: integer);
+begin
+  FFontColor.r := r;
+  FFontColor.g := g;
+  FFontColor.b := b;
+  FFontColor.a := a;
+  UpdateTexture;
+end;
+
+procedure TText.SetText(AText: PChar);
+begin
+  FText := AText;
+  UpdateTexture;
+end;
+
+procedure TText.UpdateTexture;
+begin
+  Surface := TTF_RenderText_Solid(FFont, FText, FFontColor);
+  Texture := SDL_CreateTextureFromSurface(GameRenderer, Surface);
+  TTF_SizeText(FFont, FText, @DstRect.w, @DstRect.h);
 end;
 
 constructor TEventTimer.Create(ADelay, AInterval: integer);
@@ -251,8 +384,7 @@ begin
   SrcRect.w := AValue;
 end;
 
-constructor TAnimatedSprite.Create(AGame: TWaffleGame;
-  APosX, APosY, AWidth, AHeight: Float);
+constructor TAnimatedSprite.Create(APosX, APosY, AWidth, AHeight: Float);
 begin
   inherited;
   CurrFrame := 0;
@@ -273,8 +405,8 @@ begin
     nil, CurrentFlip);
 
   InternalCounter := (InternalCounter + 1) mod
-    round(GameRef.FramePerSecond * (FrameChangeDelay / 1000));
-  if InternalCounter >= (round(GameRef.FramePerSecond *
+    round(ParentScene.GameRef.FramePerSecond * (FrameChangeDelay / 1000));
+  if InternalCounter >= (round(ParentScene.GameRef.FramePerSecond *
     (FrameChangeDelay / 1000)) - 1) then
     CurrFrame := (CurrFrame + 1) mod (FrameCols * FrameRows);
 end;
@@ -288,17 +420,20 @@ end;
 
 constructor TScene.Create;
 begin
-  FSpriteList := TSpriteList.Create(True);
-  //FSpriteList := nil;
+  FLayerList  := TLayerList.Create();
+  FSpriteList := TSpriteList.Create();
+  BaseLayer := TLayer.Create;
+end;
+
+procedure TScene.AddLayer(layer: TLayer);
+begin
+  LayerList.Add(layer);
 end;
 
 procedure TScene.AddSprite(sprite: TSprite);
 begin
-  //SetLength(FSpriteList, Length(FSpriteList) + 1);
-  //FSpriteList[Length(FSpriteList) - 1] := sprite;
-
-  SpriteList.Add(sprite);
-  sprite.ParentScene := self;
+  BaseLayer.SpriteList.Add(sprite);
+  //sprite.ParentLayer := BaseLayer;
 end;
 
 procedure TScene.Cleanup;
@@ -352,7 +487,6 @@ end;
 
 procedure TSprite.SetOpacity(AValue: UInt8);
 begin
-  //SDL_SetTextureAlphaMod(Self.Texture, AValue);
   FOpacity := AValue;
 end;
 
@@ -368,17 +502,16 @@ begin
   DstRect.y := round(AValue);
 end;
 
-constructor TSprite.Create(AGame: TWaffleGame; APosX, APosY, AWidth, AHeight: Float);
+constructor TSprite.Create(APosX, APosY, AWidth, AHeight: Float);
 begin
   CurrentFlip := SDL_FLIP_NONE;
   FlipHorizontal := False;
   FlipVertical := False;
-  GameRef := AGame;
-  Shown   := True;
-  PosX    := APosX;
-  PosY    := APosY;
-  Width   := AWidth;
-  Height  := AHeight;
+  Shown  := True;
+  PosX   := APosX;
+  PosY   := APosY;
+  Width  := AWidth;
+  Height := AHeight;
 
   DstRect.x := round(PosX);
   DstRect.y := round(PosY);
@@ -395,7 +528,7 @@ procedure TSprite.Delete;
 var
   s: TSprite;
 begin
-  ParentScene.SpriteList.Remove(self);
+  ParentLayer.SpriteList.Remove(self);
   self := nil;
 end;
 
@@ -428,7 +561,8 @@ begin
     SDL_SetWindowFullscreen(GameWindow, 0);
 end;
 
-constructor TWaffleGame.Create(ATitle: PChar; AScreenWidth, AScreenHeight: integer);
+constructor TWaffleGame.Create(ATitle: PChar;
+  AX, AY, AScreenWidth, AScreenHeight: integer);
 var
   DefaultScene: TScene;
 begin
@@ -441,15 +575,9 @@ begin
   ScreenWidth := AScreenWidth;
   Title := ATitle;
 
-  if SDL_Init(SDL_INIT_EVERYTHING) < 0 then
-    WriteLn('Failed');
-
-  if TTF_Init() = -1 then
-    WriteLn('Failed');
-
-  GameWindow   := SDL_CreateWindow(Title, 400, 100, ScreenWidth,
-    ScreenHeight, SDL_WINDOW_SHOWN);
-  GameRenderer := SDL_CreateRenderer(GameWindow, -1, 0);
+  SDL_SetWindowSize(GameWindow, AScreenWidth, AScreenHeight);
+  SDL_SetWindowPosition(GameWindow, AX, AY);
+  SDL_SetWindowTitle(GameWindow, ATitle);
 end;
 
 procedure TWaffleGame.Cleanup;
@@ -471,19 +599,16 @@ end;
 procedure TWaffleGame.Start;
 var
   spr: TSprite;
+  layer: TLayer;
   StartingTick: UInt32;
   TNow, TLast: UInt64;
   dt: Float;
   ev: PSDL_Event;
-
-  f: PTTF_Font;
 begin
   if Assigned(CurrentScene.OnInit) then
     CurrentScene.OnInit;
 
   New(ev);
-
-  f: TTF_OpenFont();
 
   TNow := SDL_GetPerformanceCounter;
   while not quit do
@@ -500,7 +625,8 @@ begin
     { Event }
     while SDL_PollEvent(ev) = 1 do
       case ev^.type_ of
-        SDL_KEYDOWN: begin end;//WriteLn(ev^.key.keysym.scancode);//WriteLn(SDL_GetKeyName(ev^.key.keysym.sym));
+        SDL_KEYDOWN: ;
+        //WriteLn(ev^.key.keysym.scancode);//WriteLn(SDL_GetKeyName(ev^.key.keysym.sym));
       end;
 
     { Update logic }
@@ -510,6 +636,10 @@ begin
       if not (TMethod(@spr.OnUpdate).Code = Pointer(@system.AbstractError)) then
         spr.OnUpdate(self, dt);
 
+    CurrentScene.BaseLayer.OnUpdate(self, dt);
+    for layer in CurrentScene.LayerList do
+      layer.OnUpdate(self, dt);
+
     { Drawing logic }
     SDL_SetRenderDrawColor(GameRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(GameRenderer);
@@ -517,19 +647,29 @@ begin
     for spr in CurrentScene.SpriteList do
       spr.Draw;
 
+    CurrentScene.BaseLayer.Draw;
+    for layer in CurrentScene.LayerList do
+      layer.Draw;
+
     SDL_RenderPresent(GameRenderer);
 
     if (1000 div FramePerSecond) > (SDL_GetTicks - StartingTick) then
       SDL_Delay(1000 div FramePerSecond - (SDL_GetTicks - StartingTick));
   end;
 
-  { Cleanup renderer & window }
-  SDL_DestroyRenderer(GameRenderer);
-  SDL_DestroyWindow(GameWindow);
-
   SDL_Quit();
 end;
 
 initialization
+  { TODO: add error handling }
+  SDL_Init(SDL_INIT_EVERYTHING);
+  TTF_Init();
+
+  GameWindow   := SDL_CreateWindow('', 0, 0, 0, 0, SDL_WINDOW_SHOWN);
+  GameRenderer := SDL_CreateRenderer(GameWindow, -1, 0);
+
+finalization
+  SDL_DestroyRenderer(GameRenderer);
+  SDL_DestroyWindow(GameWindow);
 
 end.
