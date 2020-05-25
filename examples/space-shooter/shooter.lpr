@@ -3,7 +3,8 @@ program shooter;
 {$mode objfpc}{$H+}
 
 uses
-  waffle;
+  waffle,
+  SysUtils;
 
 const
   SCREEN_WIDTH = 1024;
@@ -16,7 +17,7 @@ type
   TPlayerSprite = class(TSprite)
     Counter: integer;
     IsShooting: boolean;
-    constructor Create(AGame: TWaffleGame; APosX, APosY, AWidth, AHeight: Float);
+    constructor Create(APosX, APosY, AWidth, AHeight: Float);
       override;
     procedure OnUpdate(Game: TWaffleGame; dt: Float); override;
     procedure SpawnBullet;
@@ -26,7 +27,7 @@ type
 
   TEnemySprite = class(TSprite)
     Counter: integer;
-    constructor Create(AGame: TWaffleGame; APosX, APosY, AWidth, AHeight: Float);
+    constructor Create(APosX, APosY, AWidth, AHeight: Float);
       override;
     procedure OnUpdate(Game: TWaffleGame; dt: Float); override;
     procedure SpawnBullet;
@@ -57,13 +58,26 @@ var
   Player: TPlayerSprite;
   PlayerTexture, PlayerBulletTexture: PSDL_Texture;
   EnemyTexture, EnemyBulletTexture: PSDL_Texture;
+  Asteroid: TSprite;
   Stars: array[0..199] of TSprite;
-  StarTexture, StarTextureDim: PSDL_Texture;
+  StarTexture, AsteroidTexture: PSDL_Texture;
   i: integer;
+  score: integer;
   enemyspawntimer: float;
+  txt: TText;
+  BackgroundLayer, GameObjectLayer, UILayer: TLayer;
 
-
-
+  procedure SpawnEnemy;
+  var
+    en: TEnemySprite;
+  begin
+    en := TEnemySprite.Create(
+      Random(SCREEN_WIDTH - 80), -80,
+      80,
+      80);
+    en.SetTexture(EnemyTexture);
+    GameObjectLayer.AddSprite(en);
+  end;
 
   { TMainScene }
   procedure TMainScene.OnUpdate(Game: TWaffleGame; dt: Float);
@@ -105,16 +119,19 @@ var
         Stars[i].PosY := 0;
     end;
 
+    Asteroid.PosY     := Asteroid.PosY + 50 * dt;
+    Asteroid.Rotation := Asteroid.Rotation + 100 * dt;
+    if Asteroid.PosY > SCREEN_HEIGHT then
+    begin
+      Asteroid.PosX := Random(SCREEN_WIDTH - 120);
+      Asteroid.PosY := -98;
+    end;
+
     enemyspawntimer := enemyspawntimer + dt;
     if enemyspawntimer > dt * 50 then
     begin
       enemyspawntimer := 0;
-      en := TEnemySprite.Create(ShooterGame,
-        Random(SCREEN_WIDTH - 80), -80,
-        80,
-        80);
-      en.SetTexture(EnemyTexture);
-      MainScene.AddSprite(en);
+      SpawnEnemy;
     end;
   end;
 
@@ -129,20 +146,21 @@ var
     if PosY < -Height then
       Delete;
 
-    for e in ParentScene.SpriteList do
+    for e in GameObjectLayer.SpriteList do
       if (e is TEnemySprite) and SpriteRectsIntersect(self, e) then
       begin
         e.Delete;
         self.Delete;
+        Inc(score);
+        txt.SetText(PChar('Score: ' + IntToStr(score)));
       end;
   end;
 
   { TPlayer }
 
-  constructor TPlayerSprite.Create(AGame: TWaffleGame;
-    APosX, APosY, AWidth, AHeight: Float);
+  constructor TPlayerSprite.Create(APosX, APosY, AWidth, AHeight: Float);
   begin
-    inherited Create(AGame, APosX, APosY, AWidth, AHeight);
+    inherited Create(APosX, APosY, AWidth, AHeight);
     IsShooting := False;
   end;
 
@@ -163,10 +181,10 @@ var
   var
     Bullet: TPlayerBullet;
   begin
-    Bullet := TPlayerBullet.Create(ParentScene.GameRef, PosX + Width /
+    Bullet := TPlayerBullet.Create(PosX + Width /
       2 - 5, PosY - 40, 10, 40);
     Bullet.SetTexture(PlayerBulletTexture);
-    ParentScene.AddSprite(Bullet);
+    GameObjectLayer.AddSprite(Bullet);
   end;
 
   { TBullet }
@@ -180,13 +198,11 @@ var
 
     if SpriteRectsIntersect(self, player) then
       self.Delete;
-
   end;
 
-  constructor TEnemySprite.Create(AGame: TWaffleGame;
-    APosX, APosY, AWidth, AHeight: Float);
+  constructor TEnemySprite.Create(APosX, APosY, AWidth, AHeight: Float);
   begin
-    inherited Create(AGame, APosX, APosY, AWidth, AHeight);
+    inherited Create(APosX, APosY, AWidth, AHeight);
     Counter := 0;
 
   end;
@@ -211,46 +227,49 @@ var
   var
     Bullet: TEnemyBullet;
   begin
-    Bullet := TEnemyBullet.Create(ParentScene.GameRef, PosX + Width / 2 - 5, PosY +
+    Bullet := TEnemyBullet.Create(PosX + Width / 2 - 5, PosY +
       Height - 10, 10, 30);
     Bullet.SetTexture(EnemyBulletTexture);
-    ParentScene.AddSprite(Bullet);
+    GameObjectLayer.AddSprite(Bullet);
   end;
 
-  procedure SpawnEnemy;
+  procedure LoadTextures;
   begin
-    MainScene.AddSprite(TEnemySprite.Create(ShooterGame,
-      Random(SCREEN_WIDTH - 80), -80,
-      80,
-      80));
+    PlayerTexture   := CreateTextureFromFile('assets/playerShip1_red.png');
+    PlayerBulletTexture := CreateTextureFromFile('assets/laserRed01.png');
+    EnemyTexture    := CreateTextureFromFile('assets/enemyBlue1.png');
+    EnemyBulletTexture := CreateTextureFromFile('assets/laserBlue15.png');
+    AsteroidTexture := CreateTextureFromFile('assets/meteorBrown_big2.png');
+    StarTexture     := CreateTextureFromFile('assets/star1.png');
   end;
 
 begin
-  ShooterGame := TWaffleGame.Create('Space Shooter', SCREEN_WIDTH, SCREEN_HEIGHT);
+  Randomize;
+  LoadTextures;
+
+  score := 0;
+
+  ShooterGame := TWaffleGame.Create('Space Shooter', 100, 100,
+    SCREEN_WIDTH, SCREEN_HEIGHT);
   ShooterGame.FramePerSecond := 60;
-  ShooterGame.Fullscreen:=True;
 
-  PlayerTexture := CreateTextureFromFile('assets/playerShip1_red.png');
-  PlayerBulletTexture := CreateTextureFromFile('assets/laserRed01.png');
-  EnemyTexture  := CreateTextureFromFile('assets/enemyBlue1.png');
-  EnemyBulletTexture := CreateTextureFromFile('assets/laserBlue15.png');
-  StarTexture   := CreateTextureFromFile('assets/star1.png');
+  txt := TText.Create(10, 10, 20);
+  txt.LoadFontFromFile('assets/neuropol.ttf');
+  txt.SetText(PChar('Score: ' + IntToStr(score)));
+  txt.SetColor(255, 0, 0, 255);
 
-  MainScene := TMainScene.Create;
-
-  Player := TPlayerSprite.Create(ShooterGame,
+  Player := TPlayerSprite.Create(
     SCREEN_WIDTH div 2 - 40,
     SCREEN_HEIGHT - 120,
     99,
     75);
-
   Player.SetTexture(PlayerTexture);
-  MainScene.AddSprite(Player);
 
-  { create stars }
+  BackgroundLayer := TLayer.Create;
+  { create stars and put them in background layer }
   for i := 0 to 199 do
   begin
-    Stars[i] := TSprite.Create(ShooterGame, random(SCREEN_WIDTH),
+    Stars[i] := TSprite.Create(random(SCREEN_WIDTH),
       random(SCREEN_HEIGHT), 10, 10);
     stars[i].SetTexture(StarTexture);
     if i > 100 then
@@ -258,12 +277,25 @@ begin
       Stars[i].Opacity := 150;
       stars[i].SetTexture(StarTexture);
     end;
-    MainScene.AddSprite(Stars[i]);
+    BackgroundLayer.AddSprite(Stars[i]);
   end;
+  Asteroid := TSprite.Create(Random(SCREEN_WIDTH - 120), 0, 120, 98);
+  Asteroid.SetTexture(AsteroidTexture);
+  BackgroundLayer.AddSprite(Asteroid);
+
+  GameObjectLayer := TLayer.Create;
+  GameObjectLayer.AddSprite(Player);
+
+  UILayer := TLayer.Create;
+  UILayer.AddSprite(txt);
+
+  MainScene := TMainScene.Create;
+  MainScene.AddLayer(BackgroundLayer);
+  MainScene.AddLayer(GameObjectLayer);
+  MainScene.AddLayer(UILayer);
 
   { set current scene }
   ShooterGame.SetScene(MainScene);
-
   ShooterGame.Start;
   ShooterGame.Cleanup;
 end.
