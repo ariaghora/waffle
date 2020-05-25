@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectSession>
+    <PathDelim Value="\"/>
+    <Version Value="11"/>
+    <BuildModes Active="Default"/>
+    <Units Count="4">
+      <Unit0>
+        <Filename Value="shooter.lpr"/>
+        <IsPartOfProject Value="True"/>
+        <TopLine Value="222"/>
+        <CursorPos X="25" Y="238"/>
+        <UsageCount Value="203"/>
+        <Loaded Value="True"/>
+      </Unit0>
+      <Unit1>
+        <Filename Value="..\..\waffle.pas"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="431"/>
+        <CursorPos X="20" Y="448"/>
+        <UsageCount Value="110"/>
+        <Loaded Value="True"/>
+      </Unit1>
+      <Unit2>
+        <Filename Value="..\..\sdlintf.inc"/>
+        <EditorIndex Value="3"/>
+        <TopLine Value="643"/>
+        <CursorPos X="55" Y="658"/>
+        <UsageCount Value="109"/>
+        <Loaded Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="..\..\sdlconst.inc"/>
+        <EditorIndex Value="2"/>
+        <TopLine Value="152"/>
+        <CursorPos Y="180"/>
+        <UsageCount Value="104"/>
+        <Loaded Value="True"/>
+      </Unit3>
+    </Units>
+    <JumpHistory Count="30" HistoryIndex="29">
+      <Position1>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="257" Column="3" TopLine="254"/>
+      </Position1>
+      <Position2>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="115" Column="17" TopLine="101"/>
+      </Position2>
+      <Position3>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="257" Column="3" TopLine="254"/>
+      </Position3>
+      <Position4>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="83" Column="17" TopLine="79"/>
+      </Position4>
+      <Position5>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="371" Column="3" TopLine="369"/>
+      </Position5>
+      <Position6>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="83" Column="17" TopLine="70"/>
+      </Position6>
+      <Position7>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="387" Column="4" TopLine="369"/>
+      </Position7>
+      <Position8>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="86" Column="17" TopLine="70"/>
+      </Position8>
+      <Position9>
+        <Filename Value="shooter.lpr"/>
+        <Caret Line="259" Column="17" TopLine="242"/>
+      </Position9>
+      <Position10>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="404" Column="3" TopLine="400"/>
+      </Position10>
+      <Position11>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="61" Column="45" TopLine="73"/>
+      </Position11>
+      <Position12>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="79" Column="15" TopLine="75"/>
+      </Position12>
+      <Position13>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="403" Column="39" TopLine="377"/>
+      </Position13>
+      <Position14>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="91" Column="14" TopLine="78"/>
+      </Position14>
+      <Position15>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="79" Column="15" TopLine="79"/>
+      </Position15>
+      <Position16>
+        <Filename Value="shooter.lpr"/>
+        <Caret Line="236" Column="62" TopLine="65"/>
+      </Position16>
+      <Position17>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="159" Column="10" TopLine="145"/>
+      </Position17>
+      <Position18>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="181" Column="3" TopLine="179"/>
+      </Position18>
+      <Position19>
+        <Filename Value="shooter.lpr"/>
+        <Caret Line="76" Column="17" TopLine="56"/>
+      </Position19>
+      <Position20>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="159" Column="10" TopLine="144"/>
+      </Position20>
+      <Position21>
+        <Filename Value="shooter.lpr"/>
+        <Caret Line="263" Column="16" TopLine="240"/>
+      </Position21>
+      <Position22>
+        <Filename Value="..\..\sdlintf.inc"/>
+        <Caret Line="645" Column="25" TopLine="624"/>
+      </Position22>
+      <Position23>
+        <Filename Value="..\..\sdlintf.inc"/>
+        <Caret Line="664" Column="87" TopLine="636"/>
+      </Position23>
+      <Position24>
+        <Filename Value="..\..\sdlconst.inc"/>
+        <Caret Line="4" Column="32"/>
+      </Position24>
+      <Position25>
+        <Filename Value="..\..\sdlintf.inc"/>
+        <Caret Line="664" Column="87" TopLine="636"/>
+      </Position25>
+      <Position26>
+        <Filename Value="..\..\sdlintf.inc"/>
+        <Caret Line="665" Column="35" TopLine="637"/>
+      </Position26>
+      <Position27>
+        <Filename Value="..\..\sdlintf.inc"/>
+        <Caret Line="39" Column="32" TopLine="25"/>
+      </Position27>
+      <Position28>
+        <Filename Value="shooter.lpr"/>
+        <Caret Line="231" Column="31" TopLine="222"/>
+      </Position28>
+      <Position29>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="463" Column="25" TopLine="453"/>
+      </Position29>
+      <Position30>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="47" Column="15" TopLine="36"/>
+      </Position30>
+    </JumpHistory>
+    <RunParams>
+      <FormatVersion Value="2"/>
+      <Modes Count="0" ActiveMode=""/>
+    </RunParams>
+  </ProjectSession>
+</CONFIG>
