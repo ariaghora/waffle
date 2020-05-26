@@ -8,12 +8,13 @@ uses
   Classes, fgl, math, SysUtils;
 
 const
-  KEY_ESC   = 41;
-  KEY_SPACE = 44;
-  KEY_RIGHT = 79;
-  KEY_LEFT  = 80;
-  KEY_DOWN  = 81;
-  KEY_UP    = 82;
+  KEY_RETURN = 40;
+  KEY_ESC    = 41;
+  KEY_SPACE  = 44;
+  KEY_RIGHT  = 79;
+  KEY_LEFT   = 80;
+  KEY_DOWN   = 81;
+  KEY_UP     = 82;
 
   {$I sdlconst.inc }
 
@@ -204,8 +205,8 @@ type
     procedure AddLayer(layer: TLayer);
     procedure AddSprite(sprite: TSprite);
     procedure Cleanup;
-    procedure OnUpdate(Game: TWaffleGame; dt: Float); virtual; abstract;
-    procedure OnKeyDown(Key: UInt32); virtual; abstract;
+    procedure OnUpdate(Game: TWaffleGame; dt: Float); virtual;
+    procedure OnKeyDown(Key: UInt32); virtual;
     property LayerList: TLayerList read FLayerList;
     property ScreenWidth: SInt32 read GetScreenWidth;
     property SpriteList: TSpriteList read FSpriteList;
@@ -262,8 +263,8 @@ begin
   fs := TTF_RenderText_Solid(f, 'Score: 0', c1);
   ft := SDL_CreateTextureFromSurface(GameRenderer, fs);
 
-  fr.x := 10;
-  fr.y := 10;
+  //fr.x := 10;
+  //fr.y := 10;
   TTF_SizeText(f, 'Score: 0', @fr.w, @fr.h);
 end;
 
@@ -439,6 +440,8 @@ begin
   Surface := TTF_RenderText_Solid(FFont, FText, FFontColor);
   Texture := SDL_CreateTextureFromSurface(GameRenderer, Surface);
   TTF_SizeText(FFont, FText, @DstRect.w, @DstRect.h);
+  Width  := DstRect.w;
+  Height := DstRect.h;
 end;
 
 constructor TEventTimer.Create(ADelay, AInterval: integer);
@@ -550,6 +553,16 @@ begin
   for s in SpriteList do
     s.Delete;
   FreeAndNil(self);
+end;
+
+procedure TScene.OnUpdate(Game: TWaffleGame; dt: Float);
+begin
+
+end;
+
+procedure TScene.OnKeyDown(Key: UInt32);
+begin
+
 end;
 
 { TSprite }
@@ -724,12 +737,12 @@ begin
     { Event }
     while SDL_PollEvent(ev) = 1 do
       case ev^.type_ of
-        SDL_KEYDOWN: ;
-        //WriteLn(ev^.key.keysym.scancode);//WriteLn(SDL_GetKeyName(ev^.key.keysym.sym));
+        SDL_KEYDOWN: CurrentScene.OnKeyDown(ev^.key.keysym.scancode);
       end;
 
     { Update logic }
-    CurrentScene.OnUpdate(self, dt);
+    if not (TMethod(@CurrentScene.OnUpdate).Code = Pointer(@system.AbstractError)) then
+      CurrentScene.OnUpdate(self, dt);
 
     for spr in CurrentScene.SpriteList do
       if not (TMethod(@spr.OnUpdate).Code = Pointer(@system.AbstractError)) then
