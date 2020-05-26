@@ -16,9 +16,9 @@ const
   KEY_DOWN   = 81;
   KEY_UP     = 82;
 
-  {$I sdlconst.inc }
+  {$I sdlconst.pp }
 
-{$I sdlintf.inc}
+{$I sdlintf.pp}
 
 type
   TEventTimer = class;
