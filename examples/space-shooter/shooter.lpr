@@ -26,6 +26,7 @@ type
   { TEnemySprite }
 
   TEnemySprite = class(TSprite)
+    Dying: boolean;
     Counter: integer;
     constructor Create(APosX, APosY, AWidth, AHeight: Float);
       override;
@@ -66,6 +67,7 @@ var
   enemyspawntimer: float;
   txt: TText;
   BackgroundLayer, GameObjectLayer, UILayer: TLayer;
+  part: TParticleEmitter;
 
   procedure SpawnEnemy;
   var
@@ -147,13 +149,14 @@ var
       Delete;
 
     for e in GameObjectLayer.SpriteList do
-      if (e is TEnemySprite) and SpriteRectsIntersect(self, e) then
-      begin
-        e.Delete;
-        self.Delete;
-        Inc(score);
-        txt.SetText(PChar('Score: ' + IntToStr(score)));
-      end;
+      if (e is TEnemySprite) and (SpriteRectsIntersect(self, e)) then
+        if not (TEnemySprite(e).Dying) then
+        begin
+          TEnemySprite(e).Dying := True;
+          Inc(score);
+          txt.SetText(PChar('Score: ' + IntToStr(score)));
+          self.Delete;
+        end;
   end;
 
   { TPlayer }
@@ -175,6 +178,9 @@ var
     if IsShooting then
       Counter := (Counter + 1) mod round(Game.FramePerSecond * SpawnDelay);
 
+    part.OnUpdate(Game, dt);
+    part.PosX := PosX + Width / 2 - 15;
+    part.PosY := PosY + Height;
   end;
 
   procedure TPlayerSprite.SpawnBullet;
@@ -204,7 +210,7 @@ var
   begin
     inherited Create(APosX, APosY, AWidth, AHeight);
     Counter := 0;
-
+    Dying   := False;
   end;
 
   procedure TEnemySprite.OnUpdate(Game: TWaffleGame; dt: Float);
@@ -220,6 +226,13 @@ var
       SpawnBullet;
     SpawnDelay := 1;  // in seconds
     Counter    := (Counter + 1) mod round(Game.FramePerSecond * SpawnDelay);
+
+    if Dying then
+    begin
+      self.Opacity := self.Opacity - 10;
+      if self.Opacity < 0 then
+        self.Delete;
+    end;
 
   end;
 
@@ -284,6 +297,9 @@ begin
   BackgroundLayer.AddSprite(Asteroid);
 
   GameObjectLayer := TLayer.Create;
+  part := TParticleEmitter.Create(CreateTextureFromFile('assets/flame.png'),
+    100.0, 100.0, 100);
+  part.ParentLayer := GameObjectLayer;
   GameObjectLayer.AddSprite(Player);
 
   UILayer := TLayer.Create;

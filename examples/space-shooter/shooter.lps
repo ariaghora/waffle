@@ -9,24 +9,22 @@
         <Filename Value="shooter.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="107"/>
-        <CursorPos X="43" Y="122"/>
+        <TopLine Value="168"/>
+        <CursorPos X="32" Y="183"/>
         <UsageCount Value="203"/>
         <Loaded Value="True"/>
       </Unit0>
       <Unit1>
         <Filename Value="..\..\waffle.pas"/>
         <EditorIndex Value="1"/>
-        <TopLine Value="419"/>
-        <CursorPos Y="435"/>
+        <TopLine Value="720"/>
+        <CursorPos X="32" Y="740"/>
         <UsageCount Value="110"/>
         <Loaded Value="True"/>
       </Unit1>
       <Unit2>
         <Filename Value="..\..\sdlintf.inc"/>
         <EditorIndex Value="3"/>
-        <TopLine Value="615"/>
-        <CursorPos X="35" Y="631"/>
         <UsageCount Value="109"/>
         <Loaded Value="True"/>
       </Unit2>
@@ -43,129 +41,129 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="160"/>
         <CursorPos X="14" Y="176"/>
-        <UsageCount Value="10"/>
+        <UsageCount Value="7"/>
       </Unit4>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">
       <Position1>
-        <Filename Value="shooter.lpr"/>
-        <Caret Line="118" Column="22" TopLine="104"/>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="102" Column="29" TopLine="87"/>
       </Position1>
       <Position2>
-        <Filename Value="shooter.lpr"/>
-        <Caret Line="125" Column="18" TopLine="189"/>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="91" Column="39" TopLine="85"/>
       </Position2>
       <Position3>
-        <Filename Value="shooter.lpr"/>
-        <Caret Line="33" Column="15" TopLine="19"/>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="102" Column="44" TopLine="87"/>
       </Position3>
       <Position4>
-        <Filename Value="shooter.lpr"/>
-        <Caret Line="217" Column="8" TopLine="210"/>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="91" Column="15" TopLine="88"/>
       </Position4>
       <Position5>
-        <Filename Value="shooter.lpr"/>
-        <Caret Line="208" Column="6" TopLine="194"/>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="76" Column="23" TopLine="59"/>
       </Position5>
       <Position6>
-        <Filename Value="shooter.lpr"/>
-        <Caret Line="275" Column="12" TopLine="259"/>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="588" Column="43" TopLine="572"/>
       </Position6>
       <Position7>
         <Filename Value="..\..\waffle.pas"/>
-        <Caret Line="607" Column="18" TopLine="597"/>
+        <Caret Line="705" Column="19" TopLine="693"/>
       </Position7>
       <Position8>
         <Filename Value="..\..\waffle.pas"/>
-        <Caret TopLine="28"/>
+        <Caret Line="184" Column="19" TopLine="158"/>
       </Position8>
       <Position9>
         <Filename Value="..\..\waffle.pas"/>
-        <Caret Line="26" Column="3" TopLine="10"/>
+        <Caret Line="355" Column="26" TopLine="351"/>
       </Position9>
       <Position10>
         <Filename Value="..\..\waffle.pas"/>
-        <Caret Line="163" Column="23" TopLine="150"/>
+        <Caret Line="183" Column="28" TopLine="168"/>
       </Position10>
       <Position11>
         <Filename Value="..\..\waffle.pas"/>
-        <Caret Line="423" Column="30" TopLine="421"/>
+        <Caret Line="339" Column="39" TopLine="333"/>
       </Position11>
       <Position12>
         <Filename Value="..\..\waffle.pas"/>
-        <Caret Line="650" Column="18" TopLine="623"/>
+        <Caret Line="745" Column="18" TopLine="725"/>
       </Position12>
       <Position13>
         <Filename Value="..\..\waffle.pas"/>
-        <Caret Line="424" Column="18" TopLine="413"/>
+        <Caret Line="186" Column="15" TopLine="170"/>
       </Position13>
       <Position14>
         <Filename Value="..\..\waffle.pas"/>
-        <Caret Line="163" Column="17" TopLine="147"/>
+        <Caret Line="713" Column="36" TopLine="702"/>
       </Position14>
       <Position15>
         <Filename Value="..\..\waffle.pas"/>
-        <Caret Line="436" Column="35" TopLine="421"/>
+        <Caret Line="169" Column="5" TopLine="158"/>
       </Position15>
       <Position16>
         <Filename Value="..\..\waffle.pas"/>
-        <Caret Line="437" Column="34" TopLine="421"/>
+        <Caret Line="319" Column="3" TopLine="317"/>
       </Position16>
       <Position17>
         <Filename Value="..\..\waffle.pas"/>
-        <Caret Line="148" Column="14" TopLine="133"/>
+        <Caret Line="182" Column="15" TopLine="153"/>
       </Position17>
       <Position18>
-        <Filename Value="shooter.lpr"/>
-        <Caret Line="65" Column="26" TopLine="16"/>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="336" Column="3" TopLine="333"/>
       </Position18>
       <Position19>
-        <Filename Value="shooter.lpr"/>
-        <Caret Line="22" Column="43" TopLine="8"/>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="186" Column="17" TopLine="167"/>
       </Position19>
       <Position20>
-        <Filename Value="shooter.lpr"/>
-        <Caret Line="40" Column="24" TopLine="26"/>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="361" Column="31" TopLine="356"/>
       </Position20>
       <Position21>
         <Filename Value="shooter.lpr"/>
-        <Caret Line="22" Column="43" TopLine="8"/>
+        <Caret Line="32" Column="21" TopLine="10"/>
       </Position21>
       <Position22>
         <Filename Value="shooter.lpr"/>
-        <Caret Line="46" Column="24" TopLine="32"/>
+        <Caret Line="214" Column="5" TopLine="210"/>
       </Position22>
       <Position23>
         <Filename Value="shooter.lpr"/>
-        <Caret Line="113" Column="18" TopLine="101"/>
+        <Caret Line="31" Column="20" TopLine="18"/>
       </Position23>
       <Position24>
         <Filename Value="shooter.lpr"/>
-        <Caret Line="213" Column="7" TopLine="149"/>
+        <Caret Line="153" Column="11" TopLine="138"/>
       </Position24>
       <Position25>
         <Filename Value="shooter.lpr"/>
-        <Caret Line="77" Column="31" TopLine="59"/>
+        <Caret Line="156" Column="11" TopLine="135"/>
       </Position25>
       <Position26>
-        <Filename Value="shooter.lpr"/>
-        <Caret Line="233" Column="25" TopLine="219"/>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="713" Column="31" TopLine="704"/>
       </Position26>
       <Position27>
-        <Filename Value="shooter.lpr"/>
-        <Caret Line="225" Column="6" TopLine="210"/>
+        <Filename Value="..\..\waffle.pas"/>
+        <Caret Line="188" Column="17" TopLine="168"/>
       </Position27>
       <Position28>
         <Filename Value="shooter.lpr"/>
-        <Caret Line="122" Column="50" TopLine="107"/>
+        <Caret Line="299" Column="38" TopLine="282"/>
       </Position28>
       <Position29>
         <Filename Value="shooter.lpr"/>
-        <Caret Line="126" Column="28" TopLine="252"/>
+        <Caret Line="22" Column="19" TopLine="13"/>
       </Position29>
       <Position30>
         <Filename Value="shooter.lpr"/>
-        <Caret Line="282" Column="57" TopLine="273"/>
+        <Caret Line="182" Column="39" TopLine="167"/>
       </Position30>
     </JumpHistory>
     <RunParams>
