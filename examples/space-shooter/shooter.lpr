@@ -7,8 +7,8 @@ uses
   SysUtils;
 
 const
-  SCREEN_WIDTH = 1024;
-  SCREEN_HEIGHT = 640;
+  SCREEN_WIDTH = 1366;
+  SCREEN_HEIGHT = 800;
 
 type
 
@@ -53,9 +53,15 @@ type
     procedure OnUpdate(Game: TWaffleGame; dt: Float); override;
   end;
 
+  { TMenuScene }
+
+  TMenuScene = class(TScene)
+    procedure OnKeyDown(Key: UInt32); override;
+  end;
+
 var
   ShooterGame: TWaffleGame;
-  MainScene: TScene;
+  MainScene, MenuScene: TScene;
   Player: TPlayerSprite;
   PlayerTexture, PlayerBulletTexture: PSDL_Texture;
   EnemyTexture, EnemyBulletTexture: PSDL_Texture;
@@ -65,7 +71,7 @@ var
   i: integer;
   score: integer;
   enemyspawntimer: float;
-  txt: TText;
+  txtScore, txtTitle: TText;
   BackgroundLayer, GameObjectLayer, UILayer: TLayer;
   part: TParticleEmitter;
 
@@ -81,13 +87,24 @@ var
     GameObjectLayer.AddSprite(en);
   end;
 
+  { TMenuScene }
+
+  procedure TMenuScene.OnKeyDown(Key: UInt32);
+  begin
+    if Key = KEY_ESC then
+      ShooterGame.Exit;
+
+    if Key = KEY_RETURN then
+      ShooterGame.SetScene(MainScene);
+  end;
+
   { TMainScene }
   procedure TMainScene.OnUpdate(Game: TWaffleGame; dt: Float);
   var
     en: TEnemySprite;
   begin
     if IsKeyDown(KEY_ESC) then
-      Game.Exit;
+      Game.SetScene(MenuScene);
 
     if IsKeyDown(KEY_RIGHT) then
       Player.PosX := Player.PosX + 500 * dt;
@@ -154,7 +171,7 @@ var
         begin
           TEnemySprite(e).Dying := True;
           Inc(score);
-          txt.SetText(PChar('Score: ' + IntToStr(score)));
+          txtScore.SetText(PChar('Score: ' + IntToStr(score)));
           self.Delete;
         end;
   end;
@@ -180,7 +197,7 @@ var
 
     part.OnUpdate(Game, dt);
     part.PosX := PosX + Width / 2 - 15;
-    part.PosY := PosY + Height;
+    part.PosY := PosY + Height - 10;
   end;
 
   procedure TPlayerSprite.SpawnBullet;
@@ -266,10 +283,17 @@ begin
     SCREEN_WIDTH, SCREEN_HEIGHT);
   ShooterGame.FramePerSecond := 60;
 
-  txt := TText.Create(10, 10, 20);
-  txt.LoadFontFromFile('assets/neuropol.ttf');
-  txt.SetText(PChar('Score: ' + IntToStr(score)));
-  txt.SetColor(255, 0, 0, 255);
+  txtScore := TText.Create(10, 10, 20);
+  txtScore.LoadFontFromFile('assets/neuropol.ttf');
+  txtScore.SetText(PChar('Score: ' + IntToStr(score)));
+  txtScore.SetColor(255, 0, 0, 255);
+
+  txtTitle := TText.Create(100, 100, 50);
+  txtTitle.LoadFontFromFile('assets/neuropol.ttf');
+  txtTitle.SetText('Press enter to start');
+  txtTitle.PosX := SCREEN_WIDTH / 2 - txtTitle.Width / 2;
+  txtTitle.PosY := SCREEN_HEIGHT / 2 - txtTitle.Height / 2;
+
 
   Player := TPlayerSprite.Create(
     SCREEN_WIDTH div 2 - 40,
@@ -297,21 +321,26 @@ begin
   BackgroundLayer.AddSprite(Asteroid);
 
   GameObjectLayer := TLayer.Create;
-  part := TParticleEmitter.Create(CreateTextureFromFile('assets/flame.png'),
-    100.0, 100.0, 100);
-  part.ParentLayer := GameObjectLayer;
   GameObjectLayer.AddSprite(Player);
 
+  { Rocket burst }
+  part := TParticleEmitter.Create(CreateTextureFromFile('assets/flame.png'),
+    0.0, 0.0, 100);
+  part.ParentLayer := GameObjectLayer;
+
   UILayer := TLayer.Create;
-  UILayer.AddSprite(txt);
+  UILayer.AddSprite(txtScore);
+
+  MenuScene := TMenuScene.Create;
+  MenuScene.AddSprite(txtTitle);
 
   MainScene := TMainScene.Create;
   MainScene.AddLayer(BackgroundLayer);
   MainScene.AddLayer(GameObjectLayer);
   MainScene.AddLayer(UILayer);
 
-  { set current scene }
-  ShooterGame.SetScene(MainScene);
+  { set initial scene }
+  ShooterGame.SetScene(MenuScene);
   ShooterGame.Start;
   ShooterGame.Cleanup;
 end.
