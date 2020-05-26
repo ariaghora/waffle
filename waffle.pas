@@ -5,7 +5,7 @@ unit waffle;
 interface
 
 uses
-  Classes, fgl, SysUtils;
+  Classes, fgl, math, SysUtils;
 
 const
   KEY_ESC   = 41;
@@ -21,6 +21,7 @@ const
 
 type
   TEventTimer = class;
+  TGameEntity = class;
   TLayer      = class;
   TSprite     = class;
   TScene      = class;
@@ -30,7 +31,20 @@ type
   TGameProc  = procedure(Game: TWaffleGame);
   TProc      = procedure;
   TLayerList = specialize TFPGObjectList<TLayer>;
+  TEntityList = specialize TFPGObjectList<TGameEntity>;
   TSpriteList = specialize TFPGObjectList<TSprite>;
+
+  { TGameEntity }
+
+  TGameEntity = class
+  private
+    FParentLayer: TLayer;
+    FParentScene: TScene;
+  public
+    procedure Delete; virtual;
+    property ParentLayer: TLayer read FParentLayer write FParentLayer;
+    property ParentScene: TScene read FParentScene write FParentScene;
+  end;
 
   { TWaffleGame }
 
@@ -55,13 +69,11 @@ type
 
   { TSprite }
 
-  TSprite = class
+  TSprite = class(TGameEntity)
     DstRect: TSDL_Rect;
   private
     FFlipHorizontal, FFlipVertical: boolean;
-    FOpacity:   UInt8;
-    FParentLayer: TLayer;
-    FParentScene: TScene;
+    FOpacity:   SInt32;
     FPosX, FPosY: Float;
     FShown:     boolean;
     FSmoothing: boolean;
@@ -76,22 +88,19 @@ type
     function GetPosY: Float;
     procedure SetFlipHorizontal(AValue: boolean);
     procedure SetFlipVertical(AValue: boolean);
-    procedure SetOpacity(AValue: UInt8);
+    procedure SetOpacity(AValue: SInt32);
     procedure SetPosX(AValue: Float);
     procedure SetPosY(AValue: Float);
   public
     constructor Create(APosX, APosY, AWidth, AHeight: Float);
       virtual;
-    procedure Delete;
     procedure Draw; virtual;
     procedure OnUpdate(Game: TWaffleGame; dt: Float); virtual; abstract;
     procedure SetTexture(ATextre: PSDL_Texture);
     property FlipHorizontal: boolean read FFlipHorizontal write SetFlipHorizontal;
     property FlipVertical: boolean read FFlipVertical write SetFlipVertical;
-    property Opacity: UInt8 read FOpacity write SetOpacity;
+    property Opacity: SInt32 read FOpacity write SetOpacity;
     property Shown: boolean read FShown write FShown;
-    property ParentLayer: TLayer read FParentLayer write FParentLayer;
-    property ParentScene: TScene read FParentScene write FParentScene;
     property PosX: Float read FPosX write SetPosX;
     property PosY: Float read FPosY write SetPosY;
     property Rotation: double read FRotation write FRotation;
@@ -147,6 +156,37 @@ type
     procedure Draw;
     procedure OnUpdate(Game: TWaffleGame; dt: Float);
     property SpriteList: TSpriteList read FSpriteList;
+  end;
+
+
+  { TParticle }
+
+  TParticle = class(TSprite)
+    vx, vy: Float;
+    life:   Float;
+  public
+    constructor Create(APosX, APosY, AWidth, AHeight, AVx, AVy: Float);
+    procedure OnUpdate(Game: TWaffleGame; dt: Float); override;
+  end;
+
+  { TParticleEmitter }
+
+  TParticleEmitter = class
+    PosX, PosY:      float;
+    MinVx, MaxVx:    float;
+    MinVy, MaxVy:    float;
+    ParentLayer:     TLayer;
+    ParticleTexture: PSDL_Texture;
+  private
+    FNumParticle: integer;
+    FSpriteList:  TSpriteList;
+  public
+    constructor Create(ATexture: PSDL_Texture; APosX, APosY: Float;
+      ANumParticle: integer);
+    constructor Delete;
+    procedure Draw;
+    procedure OnUpdate(Game: TWaffleGame; dt: Float);
+    property SpriteList: TSpriteList read FSpriteList write FSpriteList;
   end;
 
   { TScene }
@@ -256,6 +296,73 @@ begin
   if Assigned(param) then
     TProc(param);
   exit(interval);
+end;
+
+{ TGameEntity }
+
+procedure TGameEntity.Delete;
+begin
+  ParentLayer.SpriteList.Remove(TSprite(self));
+  self := nil;
+end;
+
+{ TParticle }
+
+constructor TParticle.Create(APosX, APosY, AWidth, AHeight, AVx, AVy: Float);
+begin
+  inherited Create(APosX, APosY, AWidth, AHeight);
+  vx   := AVx;
+  vy   := AVy;
+  life := 0;
+end;
+
+procedure TParticle.OnUpdate(Game: TWaffleGame; dt: Float);
+begin
+  life := life + 1;
+  PosX := PosX + vx * dt;
+  PosY := PosY + vy * dt;
+
+  Opacity := Opacity - 5;
+  if Opacity < 0 then
+    self.Delete;
+
+  if life > 100 then
+    self.Delete;
+end;
+
+{ TParticleEmitter }
+
+constructor TParticleEmitter.Create(ATexture: PSDL_Texture;
+  APosX, APosY: Float; ANumParticle: integer);
+begin
+  PosX := APosX;
+  PosY := APosY;
+  FNumParticle := ANumParticle;
+  FSpriteList := TSpriteList.Create();
+  ParticleTexture := ATexture;
+end;
+
+constructor TParticleEmitter.Delete;
+var
+  s: TSprite;
+begin
+  for s in SpriteList do
+    s.Delete;
+end;
+
+procedure TParticleEmitter.Draw;
+begin
+
+end;
+
+procedure TParticleEmitter.OnUpdate(Game: TWaffleGame; dt: Float);
+var
+  p: TParticle;
+begin
+  p := TParticle.Create(PosX, PosY, 30, 40, RandomRange(-20, 20),
+    RandomRange(20, 100));
+  p.SetTexture(ParticleTexture);
+  ParentLayer.AddSprite(p);
 end;
 
 { TLayer }
@@ -422,7 +529,7 @@ constructor TScene.Create;
 begin
   FLayerList  := TLayerList.Create();
   FSpriteList := TSpriteList.Create();
-  BaseLayer := TLayer.Create;
+  BaseLayer   := TLayer.Create;
 end;
 
 procedure TScene.AddLayer(layer: TLayer);
@@ -485,7 +592,7 @@ begin
     CurrentFlip := SDL_FLIP_HORIZONTAL or SDL_FLIP_VERTICAL;
 end;
 
-procedure TSprite.SetOpacity(AValue: UInt8);
+procedure TSprite.SetOpacity(AValue: SInt32);
 begin
   FOpacity := AValue;
 end;
@@ -522,14 +629,6 @@ begin
 
   Rotation := 0;
 
-end;
-
-procedure TSprite.Delete;
-var
-  s: TSprite;
-begin
-  ParentLayer.SpriteList.Remove(self);
-  self := nil;
 end;
 
 procedure TSprite.Draw;
@@ -639,6 +738,7 @@ begin
     CurrentScene.BaseLayer.OnUpdate(self, dt);
     for layer in CurrentScene.LayerList do
       layer.OnUpdate(self, dt);
+
 
     { Drawing logic }
     SDL_SetRenderDrawColor(GameRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
