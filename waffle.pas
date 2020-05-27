@@ -111,13 +111,23 @@ type
 
   { TAnimatedSprite }
 
+  PFrameInfo = ^TFrameInfo;
+
+  TFrameInfo = record
+    CurrentFrame: pInt32;
+    TotalFrame:   integer;
+  end;
+
   TAnimatedSprite = class(TSprite)
     FrameChangeDelay: integer;
     CurrFrame: integer;
     FrameCols, FrameRows: integer;
     SrcRect:   TSDL_Rect;
     InternalCounter: integer;
+    FrameInfo: TFrameInfo;
   private
+    AnimationTimerID: integer;
+    Playing: boolean;
     function GetFrameHeight: integer;
     function GetFrameWidth: integer;
     procedure SetFrameHeight(AValue: integer);
@@ -125,6 +135,8 @@ type
   public
     constructor Create(APosX, APosY, AWidth, AHeight: Float); overload;
     procedure Draw; override;
+    procedure PlayAnimation;
+    procedure StopAnimation;
     property FrameWidth: integer read GetFrameWidth write SetFrameWidth;
     property FrameHeight: integer read GetFrameHeight write SetFrameHeight;
   end;
@@ -148,6 +160,7 @@ type
   { TLayer }
 
   TLayer = class
+    ParentScene: TScene;
   private
     FSPriteList: TSpriteList;
   public
@@ -176,13 +189,14 @@ type
     PosX, PosY:      float;
     MinVx, MaxVx:    float;
     MinVy, MaxVy:    float;
+    Width, Height:   float;
     ParentLayer:     TLayer;
     ParticleTexture: PSDL_Texture;
   private
     FNumParticle: integer;
     FSpriteList:  TSpriteList;
   public
-    constructor Create(ATexture: PSDL_Texture; APosX, APosY: Float;
+    constructor Create(ATexture: PSDL_Texture; APosX, APosY, AWidth, AHeight: Float;
       ANumParticle: integer);
     constructor Delete;
     procedure Draw;
@@ -334,10 +348,16 @@ end;
 { TParticleEmitter }
 
 constructor TParticleEmitter.Create(ATexture: PSDL_Texture;
-  APosX, APosY: Float; ANumParticle: integer);
+  APosX, APosY, AWidth, AHeight: Float; ANumParticle: integer);
 begin
-  PosX := APosX;
-  PosY := APosY;
+  PosX   := APosX;
+  PosY   := APosY;
+  Width  := AWidth;
+  Height := AHeight;
+  MinVx  := -100;
+  MaxVx  := 100;
+  MinVy  := -100;
+  MaxVy  := 100;
   FNumParticle := ANumParticle;
   FSpriteList := TSpriteList.Create();
   ParticleTexture := ATexture;
@@ -356,12 +376,17 @@ begin
 
 end;
 
+function RandomRangeF(min, max: single): single;
+begin
+  Result := min + Random * (max - min);
+end;
+
 procedure TParticleEmitter.OnUpdate(Game: TWaffleGame; dt: Float);
 var
   p: TParticle;
 begin
-  p := TParticle.Create(PosX, PosY, 30, 40, RandomRange(-20, 20),
-    RandomRange(20, 100));
+  p := TParticle.Create(PosX, PosY, Width, Height, RandomRangeF(MinVx, MaxVx),
+    RandomRangeF(MinVy, MaxVy));
   p.SetTexture(ParticleTexture);
   ParentLayer.AddSprite(p);
 end;
@@ -494,6 +519,12 @@ begin
   SrcRect.w := AValue;
 end;
 
+function foo(interval: UInt32; param: Pointer): UInt32; cdecl;
+begin
+  PFrameInfo(param)^.CurrentFrame^ := (PFrameInfo(param)^.CurrentFrame^ + 1) mod 6;
+  Exit(interval);
+end;
+
 constructor TAnimatedSprite.Create(APosX, APosY, AWidth, AHeight: Float);
 begin
   inherited;
@@ -501,6 +532,11 @@ begin
   FrameChangeDelay := 1000;
   FrameCols := 1;
   FrameRows := 1;
+
+  FrameInfo.CurrentFrame := @CurrFrame;
+  FrameInfo.TotalFrame   := 6;
+
+  Playing := False;
 
   SrcRect.x := 0;
   SrcRect.y := 0;
@@ -514,11 +550,38 @@ begin
   SDL_RenderCopyEx(GameRenderer, self.Texture, @SrcRect, @DstRect, self.Rotation,
     nil, CurrentFlip);
 
-  InternalCounter := (InternalCounter + 1) mod
-    round(ParentScene.GameRef.FramePerSecond * (FrameChangeDelay / 1000));
-  if InternalCounter >= (round(ParentScene.GameRef.FramePerSecond *
-    (FrameChangeDelay / 1000)) - 1) then
-    CurrFrame := (CurrFrame + 1) mod (FrameCols * FrameRows);
+  //InternalCounter := (InternalCounter + 1) mod 31;
+  //if InternalCounter >= 30 then
+  //begin
+  //  CurrFrame := (CurrFrame + 1) mod (FrameCols * FrameRows);
+  //  writeln(CurrFrame);
+  //end;
+
+  //InternalCounter := InternalCounter + 1;
+  //if InternalCounter > 60 then
+  //begin
+  //  InternalCounter := 0;
+  //  writeln('asd');
+  //end;
+
+end;
+
+procedure TAnimatedSprite.PlayAnimation;
+begin
+  if not Playing then
+  begin
+    Playing := not Playing;
+    AnimationTimerID := SDL_AddTimer(FrameChangeDelay, @foo, @FrameInfo);
+  end;
+end;
+
+procedure TAnimatedSprite.StopAnimation;
+begin
+  if Playing then
+  begin
+    Playing := not Playing;
+    SDL_RemoveTimer(AnimationTimerID);
+  end;
 end;
 
 { TScene }
@@ -532,18 +595,21 @@ constructor TScene.Create;
 begin
   FLayerList  := TLayerList.Create();
   FSpriteList := TSpriteList.Create();
-  BaseLayer   := TLayer.Create;
+
+  BaseLayer := TLayer.Create;
+  AddLayer(BaseLayer);
 end;
 
 procedure TScene.AddLayer(layer: TLayer);
 begin
   LayerList.Add(layer);
+  layer.ParentScene := self;
 end;
 
 procedure TScene.AddSprite(sprite: TSprite);
 begin
   BaseLayer.SpriteList.Add(sprite);
-  //sprite.ParentLayer := BaseLayer;
+  sprite.ParentLayer := BaseLayer;
 end;
 
 procedure TScene.Cleanup;
