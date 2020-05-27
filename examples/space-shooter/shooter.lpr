@@ -325,8 +325,12 @@ begin
 
   { Rocket burst }
   part := TParticleEmitter.Create(CreateTextureFromFile('assets/flame.png'),
-    0.0, 0.0, 100);
+    0, 0, 30.0, 30.0, 100);
   part.ParentLayer := GameObjectLayer;
+  part.MinVy := 60;
+  part.MaxVy := 300;
+  part.MinVx := -50;
+  part.MaxVx := 50;
 
   UILayer := TLayer.Create;
   UILayer.AddSprite(txtScore);
