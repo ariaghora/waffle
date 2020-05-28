@@ -2,7 +2,6 @@
 *.ppu
 *.o
 *.compiled
-*.dll
 *.exe
 *.lps
 test.*
