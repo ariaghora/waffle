@@ -17,6 +17,9 @@ type
   PFloat = ^Float;
   PInt = ^LongInt;
 
+  PSDL_BlendMode = ^TSDL_BlendMode;
+  TSDL_BlendMode = DWord;
+
   PSDL_DisplayMode = ^TSDL_DisplayMode;
   PSDL_Color = ^TSDL_Color;
   PSDL_Event = ^TSDL_Event;
@@ -642,6 +645,7 @@ type
   procedure SDL_DestroyTexture(texture: PSDL_Texture) cdecl; external SDL_LibName;
   procedure SDL_FreeSurface(surface: PSDL_Surface) cdecl; external SDL_LibName;
   procedure SDL_RenderPresent(renderer: PSDL_Renderer) cdecl; external SDL_LibName;
+  function SDL_SetRenderDrawBlendMode(renderer: PSDL_Renderer; blendMode: TSDL_BlendMode): SInt32 cdecl; external SDL_LibName;
   procedure SDL_SetTextureAlphaMod(texture: PSDL_Texture; alpha: UInt8) cdecl; external SDL_LibName;
 
   { Hinting }
@@ -675,4 +679,7 @@ type
   procedure TTF_SetFontHinting(font: PTTF_Font; hinting: Integer) cdecl; external TTF_LibName;
   procedure TTF_SetFontOutline(font: PTTF_Font; outline: Integer) cdecl; external TTF_LibName;
   function TTF_SizeText(font: PTTF_Font; text: PAnsiChar; w, h: PInt): Integer cdecl; external TTF_LibName;
+
+  { Primitive drawing }
+  function SDL_RenderFillRect(renderer: PSDL_Renderer; rect: PSDL_Rect): UInt64 cdecl; external SDL_LibName;
 

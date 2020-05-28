@@ -119,24 +119,33 @@ type
   end;
 
   TAnimatedSprite = class(TSprite)
-    FrameChangeDelay: integer;
+    FFrameChangeDelay: integer;
     CurrFrame: integer;
-    FrameCols, FrameRows: integer;
+    FFrameCols, FFrameRows: integer;
     SrcRect:   TSDL_Rect;
     InternalCounter: integer;
     FrameInfo: TFrameInfo;
   private
+    FrameNum: integer;
     AnimationTimerID: integer;
-    Playing: boolean;
+    Playing:  boolean;
     function GetFrameHeight: integer;
     function GetFrameWidth: integer;
+    procedure SetFrameChangeDelay(AValue: integer);
+    procedure SetFrameCols(AValue: integer);
     procedure SetFrameHeight(AValue: integer);
+    procedure SetFrameRows(AValue: integer);
     procedure SetFrameWidth(AValue: integer);
+    procedure UpdateFrameNum;
   public
     constructor Create(APosX, APosY, AWidth, AHeight: Float); overload;
     procedure Draw; override;
     procedure PlayAnimation;
     procedure StopAnimation;
+    procedure RestartAnimation;
+    property FrameChangeDelay: integer read FFrameChangeDelay write SetFrameChangeDelay;
+    property FrameCols: integer read FFrameCols write SetFrameCols;
+    property FrameRows: integer read FFrameRows write SetFrameRows;
     property FrameWidth: integer read GetFrameWidth write SetFrameWidth;
     property FrameHeight: integer read GetFrameHeight write SetFrameHeight;
   end;
@@ -219,6 +228,7 @@ type
     procedure AddLayer(layer: TLayer);
     procedure AddSprite(sprite: TSprite);
     procedure Cleanup;
+    procedure OnDraw; virtual;
     procedure OnUpdate(Game: TWaffleGame; dt: Float); virtual;
     procedure OnKeyDown(Key: UInt32); virtual;
     property LayerList: TLayerList read FLayerList;
@@ -248,6 +258,9 @@ function CreateFontTextureFromFile(FileName: PChar; FontSize: integer): PSDL_Tex
 function CreateTextureFromFile(FileName: PChar; Smooth: boolean = True): PSDL_Texture;
 function IsKeyDown(KeyCode: integer): boolean;
 function SpriteRectsIntersect(s1, s2: TSprite): boolean;
+
+procedure ClearScreen(r, g, b, a: integer);
+procedure FillRect(Rect: PSDL_Rect; r, g, b, a: integer);
 
 var
   Surf: PSDL_Surface;
@@ -302,6 +315,20 @@ begin
   r2     := s2.DstRect;
   Result := not ((r1.x > (r2.x + r2.w)) or (r1.x + r1.w < r2.x) or
     (r1.y > r2.y + r2.h) or (r1.y + r1.h < r2.y));
+end;
+
+procedure ClearScreen(r, g, b, a: integer);
+begin
+  SDL_SetRenderDrawColor(GameRenderer, r, g, b, a);
+  SDL_SetRenderDrawBlendMode(GameRenderer, $00000001);
+  SDL_RenderClear(GameRenderer);
+end;
+
+procedure FillRect(Rect: PSDL_Rect; r, g, b, a: integer);
+begin
+  SDL_SetRenderDrawColor(GameRenderer, r, g, b, a);
+  SDL_SetRenderDrawBlendMode(GameRenderer, $00000001);
+  SDL_RenderFillRect(GameRenderer, Rect);
 end;
 
 { TEventTimer }
@@ -509,9 +536,31 @@ begin
   Exit(SrcRect.w);
 end;
 
+procedure TAnimatedSprite.SetFrameChangeDelay(AValue: integer);
+begin
+  FFrameChangeDelay := AValue;
+  RestartAnimation;
+end;
+
+procedure TAnimatedSprite.SetFrameCols(AValue: integer);
+begin
+  if FFrameCols = AValue then
+    Exit;
+  FFrameCols := AValue;
+  UpdateFrameNum;
+end;
+
 procedure TAnimatedSprite.SetFrameHeight(AValue: integer);
 begin
   SrcRect.h := AValue;
+end;
+
+procedure TAnimatedSprite.SetFrameRows(AValue: integer);
+begin
+  if FFrameRows = AValue then
+    Exit;
+  FFrameRows := AValue;
+  UpdateFrameNum;
 end;
 
 procedure TAnimatedSprite.SetFrameWidth(AValue: integer);
@@ -519,9 +568,16 @@ begin
   SrcRect.w := AValue;
 end;
 
+procedure TAnimatedSprite.UpdateFrameNum;
+begin
+  FrameNum := FrameCols * FrameRows;
+  FrameInfo.TotalFrame := FrameNum;
+end;
+
 function foo(interval: UInt32; param: Pointer): UInt32; cdecl;
 begin
-  PFrameInfo(param)^.CurrentFrame^ := (PFrameInfo(param)^.CurrentFrame^ + 1) mod 6;
+  PFrameInfo(param)^.CurrentFrame^ :=
+    (PFrameInfo(param)^.CurrentFrame^ + 1) mod (PFrameInfo(param)^.TotalFrame);
   Exit(interval);
 end;
 
@@ -534,7 +590,7 @@ begin
   FrameRows := 1;
 
   FrameInfo.CurrentFrame := @CurrFrame;
-  FrameInfo.TotalFrame   := 6;
+  FrameInfo.TotalFrame   := FrameCols * FrameRows;
 
   Playing := False;
 
@@ -549,21 +605,6 @@ begin
   SrcRect.x := (CurrFrame * (FrameWidth));
   SDL_RenderCopyEx(GameRenderer, self.Texture, @SrcRect, @DstRect, self.Rotation,
     nil, CurrentFlip);
-
-  //InternalCounter := (InternalCounter + 1) mod 31;
-  //if InternalCounter >= 30 then
-  //begin
-  //  CurrFrame := (CurrFrame + 1) mod (FrameCols * FrameRows);
-  //  writeln(CurrFrame);
-  //end;
-
-  //InternalCounter := InternalCounter + 1;
-  //if InternalCounter > 60 then
-  //begin
-  //  InternalCounter := 0;
-  //  writeln('asd');
-  //end;
-
 end;
 
 procedure TAnimatedSprite.PlayAnimation;
@@ -582,6 +623,12 @@ begin
     Playing := not Playing;
     SDL_RemoveTimer(AnimationTimerID);
   end;
+end;
+
+procedure TAnimatedSprite.RestartAnimation;
+begin
+  StopAnimation;
+  PlayAnimation;
 end;
 
 { TScene }
@@ -619,6 +666,15 @@ begin
   for s in SpriteList do
     s.Delete;
   FreeAndNil(self);
+end;
+
+procedure TScene.OnDraw;
+var
+  l: TLayer;
+begin
+  BaseLayer.Draw;
+  for l in LayerList do
+    l.Draw;
 end;
 
 procedure TScene.OnUpdate(Game: TWaffleGame; dt: Float);
@@ -823,12 +879,7 @@ begin
     SDL_SetRenderDrawColor(GameRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(GameRenderer);
 
-    for spr in CurrentScene.SpriteList do
-      spr.Draw;
-
-    CurrentScene.BaseLayer.Draw;
-    for layer in CurrentScene.LayerList do
-      layer.Draw;
+    CurrentScene.OnDraw;
 
     SDL_RenderPresent(GameRenderer);
 
