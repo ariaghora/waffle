@@ -5,16 +5,16 @@ unit waffle;
 interface
 
 uses
-  Classes, fgl, math, SysUtils;
+  Classes, fgl, Math, SysUtils;
 
 const
   KEY_RETURN = 40;
-  KEY_ESC    = 41;
-  KEY_SPACE  = 44;
-  KEY_RIGHT  = 79;
-  KEY_LEFT   = 80;
-  KEY_DOWN   = 81;
-  KEY_UP     = 82;
+  KEY_ESC = 41;
+  KEY_SPACE = 44;
+  KEY_RIGHT = 79;
+  KEY_LEFT = 80;
+  KEY_DOWN = 81;
+  KEY_UP = 82;
 
   {$I sdlconst.pp }
 
@@ -23,19 +23,17 @@ const
 type
   TEventTimer = class;
   TGameEntity = class;
-  TLayer      = class;
-  TSprite     = class;
-  TScene      = class;
+  TLayer = class;
+  TSprite = class;
+  TScene = class;
   TWaffleGame = class;
 
-  TIntProc   = procedure(arg: integer);
-  TGameProc  = procedure(Game: TWaffleGame);
-  TProc      = procedure;
+  TIntProc = procedure(arg: integer);
+  TGameProc = procedure(Game: TWaffleGame);
+  TProc = procedure;
   TLayerList = specialize TFPGObjectList<TLayer>;
   TEntityList = specialize TFPGObjectList<TGameEntity>;
   TSpriteList = specialize TFPGObjectList<TSprite>;
-
-  { TGameEntity }
 
   TGameEntity = class
   private
@@ -47,16 +45,14 @@ type
     property ParentScene: TScene read FParentScene write FParentScene;
   end;
 
-  { TWaffleGame }
-
   TWaffleGame = class
     FPSLimit: integer;
-    Quit:  boolean;
+    Quit: boolean;
     ScreenHeight, ScreenWidth: integer;
     Title: PChar;
   private
     CurrentScene: TScene;
-    FFullscreen:  boolean;
+    FFullscreen: boolean;
     procedure SetFullscreen(AValue: boolean);
   public
     OnKeyDown: TIntProc;
@@ -69,18 +65,16 @@ type
     property Fullscreen: boolean read FFullscreen write SetFullscreen;
   end;
 
-  { TSprite }
-
   TSprite = class(TGameEntity)
     DstRect: TSDL_Rect;
   private
     FFlipHorizontal, FFlipVertical: boolean;
-    FOpacity:   SInt32;
+    FOpacity: SInt32;
     FPosX, FPosY: Float;
-    FShown:     boolean;
+    FShown: boolean;
     FSmoothing: boolean;
     FWidth, FHeight: Float;
-    FRotation:  double;
+    FRotation: double;
 
     CurrentFlip: integer;
     ImageFileName: PChar;
@@ -110,26 +104,24 @@ type
     property Height: Float read FHeight write FHeight;
   end;
 
-  { TAnimatedSprite }
-
   PFrameInfo = ^TFrameInfo;
 
   TFrameInfo = record
     CurrentFrame: pInt32;
-    TotalFrame:   integer;
+    TotalFrame: integer;
   end;
 
   TAnimatedSprite = class(TSprite)
     FFrameChangeDelay: integer;
     CurrFrame: integer;
     FFrameCols, FFrameRows: integer;
-    SrcRect:   TSDL_Rect;
+    SrcRect: TSDL_Rect;
     InternalCounter: integer;
     FrameInfo: TFrameInfo;
   private
     FrameNum: integer;
     AnimationTimerID: integer;
-    Playing:  boolean;
+    Playing: boolean;
     function GetFrameHeight: integer;
     function GetFrameWidth: integer;
     procedure SetFrameChangeDelay(AValue: integer);
@@ -151,14 +143,12 @@ type
     property FrameHeight: integer read GetFrameHeight write SetFrameHeight;
   end;
 
-  { TText }
-
   TText = class(TSprite)
   private
-    FFont:      PTTF_Font;
+    FFont: PTTF_Font;
     FFontColor: TSDL_Color;
-    FFontSize:  integer;
-    FText:      PChar;
+    FFontSize: integer;
+    FText: PChar;
   public
     constructor Create(APosX, APosY: Float; AFontSize: integer); overload;
     procedure LoadFontFromFile(FileName: PChar);
@@ -167,12 +157,10 @@ type
     procedure UpdateTexture;
   end;
 
-  { TLayer }
-
   TLayer = class
   private
     FParentScene: TScene;
-    FEntityList:  TEntityList;
+    FEntityList: TEntityList;
   public
     constructor Create;
     procedure AddEntitiy(Entity: TGameEntity);
@@ -188,24 +176,22 @@ type
 
   TParticle = class(TSprite)
     vx, vy: Float;
-    life:   Float;
+    life: Float;
   public
     constructor Create(APosX, APosY, AWidth, AHeight, AVx, AVy: Float);
     procedure OnUpdate(Game: TWaffleGame; dt: Float); override;
   end;
 
-  { TParticleEmitter }
-
   TParticleEmitter = class
-    PosX, PosY:      float;
-    MinVx, MaxVx:    float;
-    MinVy, MaxVy:    float;
-    Width, Height:   float;
-    ParentLayer:     TLayer;
+    PosX, PosY: float;
+    MinVx, MaxVx: float;
+    MinVy, MaxVy: float;
+    Width, Height: float;
+    ParentLayer: TLayer;
     ParticleTexture: PSDL_Texture;
   private
     FNumParticle: integer;
-    FSpriteList:  TSpriteList;
+    FSpriteList: TSpriteList;
   public
     constructor Create(ATexture: PSDL_Texture; APosX, APosY, AWidth, AHeight: Float;
       ANumParticle: integer);
@@ -215,15 +201,13 @@ type
     property SpriteList: TSpriteList read FSpriteList write FSpriteList;
   end;
 
-  { TScene }
-
   TScene = class
     GameRef: TWaffleGame;
-    OnInit:  TProc;
+    OnInit: TProc;
   private
-    FLayerList:  TLayerList;
+    FLayerList: TLayerList;
     FSpriteList: TSpriteList;
-    BaseLayer:   TLayer;
+    BaseLayer: TLayer;
     function GetScreenWidth: SInt32;
   public
     constructor Create;
@@ -252,7 +236,6 @@ type
     procedure Stop;
   end;
 
-function CreateFontTextureFromFile(FileName: PChar; FontSize: integer): PSDL_Texture;
 function CreateTextureFromFile(FileName: PChar; Smooth: boolean = True): PSDL_Texture;
 function IsKeyDown(KeyCode: integer): boolean;
 function SpriteRectsIntersect(s1, s2: TSprite): boolean;
@@ -262,36 +245,13 @@ procedure FillRect(Rect: PSDL_Rect; r, g, b, a: integer);
 
 var
   Surf: PSDL_Surface;
-  Tex:  PSDL_Texture;
+  Tex: PSDL_Texture;
   GameKeyboardState: PUInt8;
 
-  GameWindow:   PSDL_Window;
+  GameWindow: PSDL_Window;
   GameRenderer: PSDL_Renderer;
 
 implementation
-
-function CreateFontTextureFromFile(FileName: PChar; FontSize: integer): PSDL_Texture;
-var
-  f: PTTF_Font;
-  fs: PSDL_Surface;
-  ft: PSDL_Texture;
-  fr: TSDL_Rect;
-  c1: TSDL_Color;
-begin
-  c1.r := 255;
-  c1.g := 255;
-  c1.b := 255;
-  c1.a := 255;
-
-  f := TTF_OpenFont(FileName, FontSize);
-  TTF_SetFontHinting(f, TTF_HINTING_NORMAL);
-  fs := TTF_RenderText_Solid(f, 'Score: 0', c1);
-  ft := SDL_CreateTextureFromSurface(GameRenderer, fs);
-
-  //fr.x := 10;
-  //fr.y := 10;
-  TTF_SizeText(f, 'Score: 0', @fr.w, @fr.h);
-end;
 
 function CreateTextureFromFile(FileName: PChar; Smooth: boolean): PSDL_Texture;
 begin
@@ -309,8 +269,8 @@ function SpriteRectsIntersect(s1, s2: TSprite): boolean;
 var
   r1, r2: TSDL_Rect;
 begin
-  r1     := s1.DstRect;
-  r2     := s2.DstRect;
+  r1 := s1.DstRect;
+  r2 := s2.DstRect;
   Result := not ((r1.x > (r2.x + r2.w)) or (r1.x + r1.w < r2.x) or
     (r1.y > r2.y + r2.h) or (r1.y + r1.h < r2.y));
 end;
@@ -352,8 +312,8 @@ end;
 constructor TParticle.Create(APosX, APosY, AWidth, AHeight, AVx, AVy: Float);
 begin
   inherited Create(APosX, APosY, AWidth, AHeight);
-  vx   := AVx;
-  vy   := AVy;
+  vx := AVx;
+  vy := AVy;
   life := 0;
 end;
 
@@ -376,14 +336,14 @@ end;
 constructor TParticleEmitter.Create(ATexture: PSDL_Texture;
   APosX, APosY, AWidth, AHeight: Float; ANumParticle: integer);
 begin
-  PosX   := APosX;
-  PosY   := APosY;
-  Width  := AWidth;
+  PosX := APosX;
+  PosY := APosY;
+  Width := AWidth;
   Height := AHeight;
-  MinVx  := -100;
-  MaxVx  := 100;
-  MinVy  := -100;
-  MaxVy  := 100;
+  MinVx := -100;
+  MaxVx := 100;
+  MinVy := -100;
+  MaxVy := 100;
   FNumParticle := ANumParticle;
   FSpriteList := TSpriteList.Create();
   ParticleTexture := ATexture;
@@ -440,7 +400,6 @@ end;
 
 procedure TLayer.Draw;
 var
-  Spr: TSprite;
   e: TGameEntity;
 begin
   for e in EntityList do
@@ -450,7 +409,6 @@ end;
 
 procedure TLayer.OnUpdate(Game: TWaffleGame; dt: Float);
 var
-  spr: TSprite;
   e: TGameEntity;
 begin
   for e in EntityList do
@@ -465,7 +423,7 @@ constructor TText.Create(APosX, APosY: Float; AFontSize: integer);
 begin
   Create(APosX, APosY, 0, 0);
   SetColor(255, 255, 255, 255);
-  FText     := '';
+  FText := '';
   FFontSize := AFontSize;
 end;
 
@@ -495,13 +453,13 @@ begin
   Surface := TTF_RenderText_Solid(FFont, FText, FFontColor);
   Texture := SDL_CreateTextureFromSurface(GameRenderer, Surface);
   TTF_SizeText(FFont, FText, @DstRect.w, @DstRect.h);
-  Width  := DstRect.w;
+  Width := DstRect.w;
   Height := DstRect.h;
 end;
 
 constructor TEventTimer.Create(ADelay, AInterval: integer);
 begin
-  Delay    := ADelay;
+  Delay := ADelay;
   Interval := AInterval;
 end;
 
@@ -593,7 +551,7 @@ begin
   FrameRows := 1;
 
   FrameInfo.CurrentFrame := @CurrFrame;
-  FrameInfo.TotalFrame   := FrameCols * FrameRows;
+  FrameInfo.TotalFrame := FrameCols * FrameRows;
 
   Playing := False;
 
@@ -643,7 +601,7 @@ end;
 
 constructor TScene.Create;
 begin
-  FLayerList  := TLayerList.Create();
+  FLayerList := TLayerList.Create();
   FSpriteList := TSpriteList.Create();
 
   BaseLayer := TLayer.Create;
@@ -685,8 +643,12 @@ begin
 end;
 
 procedure TScene.OnUpdate(Game: TWaffleGame; dt: Float);
+var
+  l: TLayer;
 begin
-
+  BaseLayer.OnUpdate(Game, dt);
+  for l in LayerList do
+    l.OnUpdate(Game, dt);
 end;
 
 procedure TScene.OnKeyDown(Key: UInt32);
@@ -741,13 +703,13 @@ end;
 
 procedure TSprite.SetPosX(AValue: Float);
 begin
-  FPosX     := AValue;
+  FPosX := AValue;
   DstRect.x := round(AValue);
 end;
 
 procedure TSprite.SetPosY(AValue: Float);
 begin
-  FPosY     := AValue;
+  FPosY := AValue;
   DstRect.y := round(AValue);
 end;
 
@@ -756,10 +718,10 @@ begin
   CurrentFlip := SDL_FLIP_NONE;
   FlipHorizontal := False;
   FlipVertical := False;
-  Shown  := True;
-  PosX   := APosX;
-  PosY   := APosY;
-  Width  := AWidth;
+  Shown := True;
+  PosX := APosX;
+  PosY := APosY;
+  Width := AWidth;
   Height := AHeight;
 
   DstRect.x := round(PosX);
@@ -811,7 +773,7 @@ begin
   CurrentScene := DefaultScene;
 
   FPSLimit := 60;
-  Quit  := False;
+  Quit := False;
   ScreenHeight := AScreenHeight;
   ScreenWidth := AScreenWidth;
   Title := ATitle;
@@ -833,14 +795,12 @@ end;
 
 procedure TWaffleGame.SetScene(Scene: TScene);
 begin
-  CurrentScene  := Scene;
+  CurrentScene := Scene;
   Scene.GameRef := self;
 end;
 
 procedure TWaffleGame.Start;
 var
-  spr: TSprite;
-  layer: TLayer;
   StartingTick: UInt32;
   TNow, TLast: UInt64;
   dt: Float;
@@ -854,14 +814,13 @@ begin
   TNow := SDL_GetPerformanceCounter;
   while not quit do
   begin
-
     GameKeyboardState := SDL_GetKeyboardState(nil);
     SDL_PumpEvents;
 
     StartingTick := SDL_GetTicks;
     TLast := TNow;
-    TNow  := SDL_GetPerformanceCounter;
-    dt    := (TNow - TLast) / Float(SDL_GetPerformanceFrequency);
+    TNow := SDL_GetPerformanceCounter;
+    dt := (TNow - TLast) / Float(SDL_GetPerformanceFrequency);
 
     { Event }
     while SDL_PollEvent(ev) = 1 do
@@ -872,15 +831,6 @@ begin
     { Update logic }
     if not (TMethod(@CurrentScene.OnUpdate).Code = Pointer(@system.AbstractError)) then
       CurrentScene.OnUpdate(self, dt);
-
-    for spr in CurrentScene.SpriteList do
-      if not (TMethod(@spr.OnUpdate).Code = Pointer(@system.AbstractError)) then
-        spr.OnUpdate(self, dt);
-
-    CurrentScene.BaseLayer.OnUpdate(self, dt);
-    for layer in CurrentScene.LayerList do
-      layer.OnUpdate(self, dt);
-
 
     { Drawing logic }
     SDL_SetRenderDrawColor(GameRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
@@ -902,7 +852,7 @@ initialization
   SDL_Init(SDL_INIT_EVERYTHING);
   TTF_Init();
 
-  GameWindow   := SDL_CreateWindow('', 0, 0, 0, 0, SDL_WINDOW_SHOWN);
+  GameWindow := SDL_CreateWindow('', 0, 0, 0, 0, SDL_WINDOW_SHOWN);
   GameRenderer := SDL_CreateRenderer(GameWindow, -1, 0);
 
 finalization
