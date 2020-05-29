@@ -1,3 +1,0 @@
-[submodule "lib/sdl2"]
-	path = lib/sdl2
-	url = https://github.com/ev1313/Pascal-SDL-2-Headers
