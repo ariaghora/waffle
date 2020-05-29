@@ -2,6 +2,9 @@ unit waffle;
 
 {$mode objfpc}{$H+}
 
+{$LinkLib libSDL2.a}
+{$LinkLib libSDL2main.a}
+
 interface
 
 uses
@@ -238,9 +241,13 @@ type
     property SpriteList: TSpriteList read FSpriteList;
   end;
 
+  { TDefaultScene }
+
   TDefaultScene = class(TScene)
     procedure OnUpdate(Game: TWaffleGame; dt: Float); override;
   end;
+
+  { TEventTimer }
 
   TEventTimer = class
   public
