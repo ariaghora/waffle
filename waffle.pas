@@ -35,6 +35,10 @@ type
   TEntityList = specialize TFPGObjectList<TGameEntity>;
   TSpriteList = specialize TFPGObjectList<TSprite>;
 
+  TTexture = record
+    TextureData: PSDL_Texture;
+  end;
+
   TGameEntity = class
   private
     FParentLayer: TLayer;
@@ -69,17 +73,14 @@ type
     DstRect: TSDL_Rect;
   private
     FFlipHorizontal, FFlipVertical: boolean;
-    FOpacity: SInt32;
+    FOpacity: integer;
     FPosX, FPosY: Float;
     FShown: boolean;
-    FSmoothing: boolean;
     FWidth, FHeight: Float;
     FRotation: double;
 
     CurrentFlip: integer;
-    ImageFileName: PChar;
-    Surface: PSDL_Surface;
-    Texture: PSDL_Texture;
+    Texture: TTexture;
     function GetPosX: Float;
     function GetPosY: Float;
     procedure SetFlipHorizontal(AValue: boolean);
@@ -92,7 +93,7 @@ type
       virtual;
     procedure Draw; virtual;
     procedure OnUpdate(Game: TWaffleGame; dt: Float); virtual; abstract;
-    procedure SetTexture(ATextre: PSDL_Texture);
+    procedure SetTexture(ATexture: TTexture);
     property FlipHorizontal: boolean read FFlipHorizontal write SetFlipHorizontal;
     property FlipVertical: boolean read FFlipVertical write SetFlipVertical;
     property Opacity: SInt32 read FOpacity write SetOpacity;
@@ -145,6 +146,7 @@ type
 
   TText = class(TSprite)
   private
+    Surface: PSDL_Surface;
     FFont: PTTF_Font;
     FFontColor: TSDL_Color;
     FFontSize: integer;
@@ -171,9 +173,6 @@ type
     property ParentScene: TScene read FParentScene write FParentScene;
   end;
 
-
-  { TParticle }
-
   TParticle = class(TSprite)
     vx, vy: Float;
     life: Float;
@@ -188,12 +187,12 @@ type
     MinVy, MaxVy: float;
     Width, Height: float;
     ParentLayer: TLayer;
-    ParticleTexture: PSDL_Texture;
+    ParticleTexture: TTexture;
   private
     FNumParticle: integer;
     FSpriteList: TSpriteList;
   public
-    constructor Create(ATexture: PSDL_Texture; APosX, APosY, AWidth, AHeight: Float;
+    constructor Create(ATexture: TTexture; APosX, APosY, AWidth, AHeight: Float;
       ANumParticle: integer);
     constructor Delete;
     procedure Draw;
@@ -236,7 +235,7 @@ type
     procedure Stop;
   end;
 
-function CreateTextureFromFile(FileName: PChar; Smooth: boolean = True): PSDL_Texture;
+function CreateTextureFromFile(FileName: PChar; Smooth: boolean = True): TTexture;
 function IsKeyDown(KeyCode: integer): boolean;
 function SpriteRectsIntersect(s1, s2: TSprite): boolean;
 
@@ -247,17 +246,16 @@ var
   Surf: PSDL_Surface;
   Tex: PSDL_Texture;
   GameKeyboardState: PUInt8;
-
   GameWindow: PSDL_Window;
   GameRenderer: PSDL_Renderer;
 
 implementation
 
-function CreateTextureFromFile(FileName: PChar; Smooth: boolean): PSDL_Texture;
+function CreateTextureFromFile(FileName: PChar; Smooth: boolean): TTexture;
 begin
   if Smooth then
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, 'linear');
-  Exit(SDL_CreateTextureFromSurface(GameRenderer, IMG_Load(FileName)));
+  Result.TextureData := SDL_CreateTextureFromSurface(GameRenderer, IMG_Load(FileName));
 end;
 
 function IsKeyDown(KeyCode: integer): boolean;
@@ -333,7 +331,7 @@ end;
 
 { TParticleEmitter }
 
-constructor TParticleEmitter.Create(ATexture: PSDL_Texture;
+constructor TParticleEmitter.Create(ATexture: TTexture;
   APosX, APosY, AWidth, AHeight: Float; ANumParticle: integer);
 begin
   PosX := APosX;
@@ -451,7 +449,7 @@ end;
 procedure TText.UpdateTexture;
 begin
   Surface := TTF_RenderText_Solid(FFont, FText, FFontColor);
-  Texture := SDL_CreateTextureFromSurface(GameRenderer, Surface);
+  Texture.TextureData := SDL_CreateTextureFromSurface(GameRenderer, Surface);
   TTF_SizeText(FFont, FText, @DstRect.w, @DstRect.h);
   Width := DstRect.w;
   Height := DstRect.h;
@@ -564,7 +562,8 @@ end;
 procedure TAnimatedSprite.Draw;
 begin
   SrcRect.x := (CurrFrame * (FrameWidth));
-  SDL_RenderCopyEx(GameRenderer, self.Texture, @SrcRect, @DstRect, self.Rotation,
+  SDL_RenderCopyEx(GameRenderer, Texture.TextureData, @SrcRect,
+    @DstRect, self.Rotation,
     nil, CurrentFlip);
 end;
 
@@ -737,14 +736,14 @@ end;
 
 procedure TSprite.Draw;
 begin
-  SDL_SetTextureAlphaMod(self.Texture, Opacity);
-  SDL_RenderCopyEx(GameRenderer, self.Texture, nil, @DstRect, self.Rotation,
+  SDL_SetTextureAlphaMod(self.Texture.TextureData, Opacity);
+  SDL_RenderCopyEx(GameRenderer, self.Texture.TextureData, nil, @DstRect, self.Rotation,
     nil, CurrentFlip);
 end;
 
-procedure TSprite.SetTexture(ATextre: PSDL_Texture);
+procedure TSprite.SetTexture(ATexture: TTexture);
 begin
-  self.Texture := ATextre;
+  self.Texture := ATexture;
 end;
 
 { TWaffleGame }
