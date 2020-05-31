@@ -37,16 +37,19 @@ type
 
   TTexture = record
     TextureData: PSDL_Texture;
+    TextureWidth, TextureHeight: integer;
   end;
 
   TGameEntity = class
   private
+    FEntityName: string;
     FParentLayer: TLayer;
     FParentScene: TScene;
   public
     procedure Delete; virtual;
     property ParentLayer: TLayer read FParentLayer write FParentLayer;
     property ParentScene: TScene read FParentScene write FParentScene;
+    property EntitiyName: string read FEntityName write FEntityName;
   end;
 
   TWaffleGame = class
@@ -234,6 +237,7 @@ type
     Delay: integer;
     constructor Create(AInterval: integer); virtual;
     procedure DoAction; virtual; abstract;
+    destructor Destroy; override;
     procedure OnTimer(Sender: TObject);
     procedure Start;
     procedure Stop;
@@ -261,6 +265,10 @@ begin
   if Smooth then
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, 'linear');
   Result.TextureData := SDL_CreateTextureFromSurface(GameRenderer, IMG_Load(FileName));
+
+  SDL_QueryTexture(Result.TextureData, nil, nil, @Result.TextureWidth,
+    @Result.TextureHeight);
+
 end;
 
 function IsKeyDown(KeyCode: integer): boolean;
@@ -472,6 +480,12 @@ end;
 constructor TEventTimer.Create(AInterval: integer);
 begin
   FInterval := AInterval;
+end;
+
+destructor TEventTimer.Destroy;
+begin
+  Stop;
+  inherited Destroy;
 end;
 
 procedure TEventTimer.OnTimer(Sender: TObject);
@@ -848,8 +862,7 @@ begin
       end;
 
     { Update logic }
-    if not (TMethod(@CurrentScene.OnUpdate).Code = Pointer(@system.AbstractError)) then
-      CurrentScene.OnUpdate(self, dt);
+    CurrentScene.OnUpdate(self, dt);
 
     { Drawing logic }
     SDL_SetRenderDrawColor(GameRenderer, 0, 0, 0, SDL_ALPHA_OPAQUE);

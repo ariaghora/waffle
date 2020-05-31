@@ -637,6 +637,7 @@ type
   { Video }
   function SDL_CreateTextureFromSurface(renderer: PSDL_Renderer; surface: PSDL_Surface): PSDL_Texture cdecl; external SDL_LibName;
   function SDL_CreateRenderer(window: PSDL_Window; index: SInt32; flags: UInt32): PSDL_Renderer cdecl; external SDL_LibName;
+  function SDL_QueryTexture(texture: PSDL_Texture; format: PUint32; access, w, h: PInt): Int32 cdecl; external SDL_LibName;
   function SDL_RenderCopy(renderer: PSDL_Renderer; texture: PSDL_Texture; srcrect: PSDL_Rect; dstrect: PSDL_Rect): SInt32 cdecl; external SDL_LibName;
   function SDL_RenderCopyEx(renderer: PSDL_Renderer; texture: PSDL_Texture; const srcrect: PSDL_Rect; dstrect: PSDL_Rect; angle: Double; center: PSDL_Point; flip: Integer): SInt32 cdecl; external SDL_LibName;
   function SDL_RenderClear(renderer: PSDL_Renderer): SInt32 cdecl; external SDL_LibName;
