@@ -137,6 +137,7 @@ type
   public
     constructor Create(APosX, APosY, AWidth, AHeight: Float); overload;
     procedure Draw; override;
+    procedure OnUpdate(Game: TWaffleGame; dt: Float); override;
     procedure PlayAnimation;
     procedure StopAnimation;
     procedure RestartAnimation;
@@ -209,6 +210,7 @@ type
   private
     FLayerList: TLayerList;
     FSpriteList: TSpriteList;
+    FPaused: boolean;
     BaseLayer: TLayer;
     function GetScreenWidth: SInt32;
   public
@@ -218,8 +220,9 @@ type
     procedure Cleanup;
     procedure OnDraw; virtual;
     procedure OnUpdate(Game: TWaffleGame; dt: Float); virtual;
-    procedure OnKeyDown(Key: UInt32); virtual;
+    procedure OnKeyDown(Key: integer); virtual;
     property LayerList: TLayerList read FLayerList;
+    property Paused: boolean read FPaused write FPaused;
     property ScreenWidth: SInt32 read GetScreenWidth;
     property SpriteList: TSpriteList read FSpriteList;
   end;
@@ -595,10 +598,14 @@ end;
 
 procedure TAnimatedSprite.Draw;
 begin
-  SrcRect.x := (CurrFrame * (FrameWidth));
   SDL_RenderCopyEx(GameRenderer, Texture.TextureData, @SrcRect,
     @DstRect, self.Rotation,
     nil, CurrentFlip);
+end;
+
+procedure TAnimatedSprite.OnUpdate(Game: TWaffleGame; dt: Float);
+begin
+  SrcRect.x := (CurrFrame * (FrameWidth));
 end;
 
 procedure TAnimatedSprite.PlayAnimation;
@@ -635,6 +642,7 @@ end;
 constructor TScene.Create;
 begin
   FLayerList := TLayerList.Create();
+  FPaused := False;
   FSpriteList := TSpriteList.Create();
 
   BaseLayer := TLayer.Create;
@@ -679,12 +687,15 @@ procedure TScene.OnUpdate(Game: TWaffleGame; dt: Float);
 var
   l: TLayer;
 begin
-  BaseLayer.OnUpdate(Game, dt);
-  for l in LayerList do
-    l.OnUpdate(Game, dt);
+  if not Paused then
+  begin
+    BaseLayer.OnUpdate(Game, dt);
+    for l in LayerList do
+      l.OnUpdate(Game, dt);
+  end;
 end;
 
-procedure TScene.OnKeyDown(Key: UInt32);
+procedure TScene.OnKeyDown(Key: integer);
 begin
 
 end;
