@@ -5,7 +5,7 @@ unit waffle;
 interface
 
 uses
-  Classes, fgl, Math, SysUtils;
+  Classes, fgl, fptimer, Math, SysUtils;
 
 const
   KEY_RETURN = 40;
@@ -226,13 +226,18 @@ type
   end;
 
   TEventTimer = class
+  private
+    Timer: TFPTimer;
+    FInterval: integer;
+    procedure SetInterval(AValue: integer);
   public
-    OnTimer: TProc;
-    TimerId: UInt32;
-    Delay, Interval: UInt32;
-    constructor Create(ADelay, AInterval: integer); virtual;
+    Delay: integer;
+    constructor Create(AInterval: integer); virtual;
+    procedure DoAction; virtual; abstract;
+    procedure OnTimer(Sender: TObject);
     procedure Start;
     procedure Stop;
+    property Interval: integer read FInterval write SetInterval;
   end;
 
 function CreateTextureFromFile(FileName: PChar; Smooth: boolean = True): TTexture;
@@ -293,6 +298,7 @@ function Callback(interval: UInt32; param: Pointer): UInt32; cdecl;
 begin
   if Assigned(param) then
     TProc(param);
+
   exit(interval);
 end;
 
@@ -455,24 +461,38 @@ begin
   Height := DstRect.h;
 end;
 
-constructor TEventTimer.Create(ADelay, AInterval: integer);
+procedure TEventTimer.SetInterval(AValue: integer);
 begin
-  Delay := ADelay;
-  Interval := AInterval;
+  if FInterval = AValue then
+    Exit;
+  FInterval := AValue;
+  Timer.Interval := AValue;
 end;
+
+constructor TEventTimer.Create(AInterval: integer);
+begin
+  FInterval := AInterval;
+end;
+
+procedure TEventTimer.OnTimer(Sender: TObject);
+begin
+  if Assigned(@DoAction) then
+    DoAction;
+end;
+
 
 procedure TEventTimer.Start;
 begin
-  if Assigned(OnTimer) then
-  begin
-    OnTimer;
-    TimerId := SDL_AddTimer(50, @Callback, OnTimer);
-  end;
+  Timer := TFPTimer.Create(nil);
+  Timer.OnTimer := @OnTimer;
+  Timer.Interval := Interval;
+  Timer.UseTimerThread := True;
+  Timer.Enabled := True;
 end;
 
 procedure TEventTimer.Stop;
 begin
-  SDL_RemoveTimer(TimerId);
+  Timer.Free;
 end;
 
 
