@@ -136,6 +136,7 @@ type
     procedure UpdateFrameNum;
   public
     constructor Create(APosX, APosY, AWidth, AHeight: Float); overload;
+    procedure Delete; override;
     procedure Draw; override;
     procedure OnUpdate(Game: TWaffleGame; dt: Float); override;
     procedure PlayAnimation;
@@ -219,6 +220,7 @@ type
     procedure AddLayer(layer: TLayer);
     procedure Cleanup;
     procedure OnDraw; virtual;
+    procedure OnMouseMotion(X, Y: integer); virtual;
     procedure OnUpdate(Game: TWaffleGame; dt: Float); virtual;
     procedure OnKeyDown(Key: integer); virtual;
     property LayerList: TLayerList read FLayerList;
@@ -596,6 +598,12 @@ begin
   SrcRect.h := round(AHeight);
 end;
 
+procedure TAnimatedSprite.Delete;
+begin
+  StopAnimation;
+  inherited Delete;
+end;
+
 procedure TAnimatedSprite.Draw;
 begin
   SDL_RenderCopyEx(GameRenderer, Texture.TextureData, @SrcRect,
@@ -681,6 +689,11 @@ begin
   BaseLayer.Draw;
   for l in LayerList do
     l.Draw;
+end;
+
+procedure TScene.OnMouseMotion(X, Y: integer);
+begin
+
 end;
 
 procedure TScene.OnUpdate(Game: TWaffleGame; dt: Float);
@@ -870,6 +883,7 @@ begin
     while SDL_PollEvent(ev) = 1 do
       case ev^.type_ of
         SDL_KEYDOWN: CurrentScene.OnKeyDown(ev^.key.keysym.scancode);
+        SDL_MOUSEMOTION: CurrentScene.OnMouseMotion(ev^.motion.x, ev^.motion.y);
       end;
 
     { Update logic }
