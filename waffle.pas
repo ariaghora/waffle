@@ -91,6 +91,7 @@ type
     procedure SetOpacity(AValue: SInt32);
     procedure SetPosX(AValue: Float);
     procedure SetPosY(AValue: Float);
+    procedure UpdateFlip;
   public
     constructor Create(APosX, APosY, AWidth, AHeight: Float);
       virtual;
@@ -728,29 +729,13 @@ end;
 procedure TSprite.SetFlipHorizontal(AValue: boolean);
 begin
   FFlipHorizontal := AValue;
-
-  if (not FFlipHorizontal) and (not FFlipVertical) then
-    CurrentFlip := SDL_FLIP_NONE;
-  if FFlipHorizontal and not FFlipVertical then
-    CurrentFlip := SDL_FLIP_HORIZONTAL;
-  if (not FFlipHorizontal) and FFlipVertical then
-    CurrentFlip := SDL_FLIP_VERTICAL;
-  if FFlipHorizontal and FFlipVertical then
-    CurrentFlip := SDL_FLIP_HORIZONTAL or SDL_FLIP_VERTICAL;
+  UpdateFlip;
 end;
 
 procedure TSprite.SetFlipVertical(AValue: boolean);
 begin
   FFlipVertical := AValue;
-
-  if (not FFlipHorizontal) and (not FFlipVertical) then
-    CurrentFlip := SDL_FLIP_NONE;
-  if FFlipHorizontal and not FFlipVertical then
-    CurrentFlip := SDL_FLIP_HORIZONTAL;
-  if (not FFlipHorizontal) and FFlipVertical then
-    CurrentFlip := SDL_FLIP_VERTICAL;
-  if FFlipHorizontal and FFlipVertical then
-    CurrentFlip := SDL_FLIP_HORIZONTAL or SDL_FLIP_VERTICAL;
+  UpdateFlip;
 end;
 
 procedure TSprite.SetOpacity(AValue: SInt32);
@@ -768,6 +753,18 @@ procedure TSprite.SetPosY(AValue: Float);
 begin
   FPosY := AValue;
   DstRect.y := round(AValue);
+end;
+
+procedure TSprite.UpdateFlip;
+begin
+  if (not FFlipHorizontal) and (not FFlipVertical) then
+    CurrentFlip := SDL_FLIP_NONE;
+  if FFlipHorizontal and not FFlipVertical then
+    CurrentFlip := SDL_FLIP_HORIZONTAL;
+  if (not FFlipHorizontal) and FFlipVertical then
+    CurrentFlip := SDL_FLIP_VERTICAL;
+  if FFlipHorizontal and FFlipVertical then
+    CurrentFlip := SDL_FLIP_HORIZONTAL or SDL_FLIP_VERTICAL;
 end;
 
 constructor TSprite.Create(APosX, APosY, AWidth, AHeight: Float);
